@@ -1,0 +1,272 @@
+.black-friday-banner {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 80px 24px;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.black-friday-slide {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  min-height: 700px;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.black-friday-slide .black-friday-content {
+  padding: 0 64px;
+}
+
+@media (max-width: 968px) {
+  .black-friday-slide {
+    min-height: 600px;
+  }
+  
+  .black-friday-slide .black-friday-content {
+    padding: 0 32px;
+  }
+}
+
+.black-friday-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+    radial-gradient(circle at 60% 70%, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.25) 1px, transparent 1px);
+  background-size: 100px 100px, 150px 150px, 120px 120px;
+  background-position: 0 0, 50px 50px, 100px 100px;
+  opacity: 0.6;
+  filter: blur(2px);
+}
+
+.black-friday-content {
+  max-width: 1280px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 64px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.black-friday-text-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.black-friday-title {
+  font-size: 56px;
+  font-weight: 900;
+  color: #111;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -1px;
+}
+
+.black-friday-subtitle {
+  font-size: 20px;
+  color: #111;
+  margin: 0;
+  font-weight: 500;
+}
+
+.black-friday-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.black-friday-btn {
+  padding: 14px 32px;
+  background: #fff;
+  color: #111;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.black-friday-btn:hover {
+  background: #111;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.black-friday-visual-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.black-friday-letters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+}
+
+.bf-letter {
+  font-size: 72px;
+  font-weight: 900;
+  line-height: 1;
+  display: inline-block;
+  transform-style: preserve-3d;
+  text-shadow: 
+    2px 2px 0px rgba(0, 0, 0, 0.1),
+    4px 4px 8px rgba(0, 0, 0, 0.15),
+    0 0 20px rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  position: relative;
+  z-index: 2;
+}
+
+.bf-letter::before {
+  content: attr(data-letter);
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  color: rgba(255, 255, 255, 0.3);
+  z-index: -1;
+}
+
+.bf-letter-1 {
+  color: #f472b6;
+  transform: rotateY(-5deg) rotateX(5deg) translateZ(10px);
+}
+
+.bf-letter-2 {
+  color: #fb7185;
+  transform: rotateY(3deg) rotateX(-3deg) translateZ(8px);
+}
+
+.bf-letter-3 {
+  color: #fbbf24;
+  transform: rotateY(-2deg) rotateX(4deg) translateZ(12px);
+}
+
+.bf-letter-4 {
+  color: #fbbf24;
+  transform: rotateY(4deg) rotateX(-2deg) translateZ(6px);
+}
+
+.bf-letter-5 {
+  color: #f472b6;
+  transform: rotateY(-3deg) rotateX(3deg) translateZ(10px);
+}
+
+.bf-letter-6 {
+  color: #fb7185;
+  transform: rotateY(5deg) rotateX(-4deg) translateZ(8px);
+}
+
+.bf-letter-7 {
+  color: #fbbf24;
+  transform: rotateY(-4deg) rotateX(2deg) translateZ(12px);
+}
+
+.bf-letter-8 {
+  color: #fef3c7;
+  transform: rotateY(2deg) rotateX(-5deg) translateZ(6px);
+}
+
+.bf-letter-9 {
+  color: #7dd3fc;
+  transform: rotateY(-3deg) rotateX(4deg) translateZ(10px);
+}
+
+.bf-letter-10 {
+  color: #f472b6;
+  transform: rotateY(4deg) rotateX(-2deg) translateZ(8px);
+}
+
+.bf-letter-11 {
+  color: #fbbf24;
+  transform: rotateY(-2deg) rotateX(3deg) translateZ(12px);
+}
+
+@media (max-width: 968px) {
+  .black-friday-content {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    text-align: center;
+  }
+
+  .black-friday-text-section {
+    align-items: center;
+  }
+
+  .black-friday-title {
+    font-size: 42px;
+  }
+
+  .black-friday-subtitle {
+    font-size: 18px;
+  }
+
+  .black-friday-buttons {
+    justify-content: center;
+  }
+
+  .bf-letter {
+    font-size: 48px;
+  }
+
+  .black-friday-visual-section {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .black-friday-banner {
+    padding: 60px 16px;
+    min-height: 400px;
+  }
+
+  .black-friday-title {
+    font-size: 32px;
+  }
+
+  .black-friday-subtitle {
+    font-size: 16px;
+  }
+
+  .black-friday-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .black-friday-btn {
+    width: 100%;
+  }
+
+  .bf-letter {
+    font-size: 36px;
+  }
+
+  .black-friday-letters {
+    gap: 4px;
+  }
+}
+

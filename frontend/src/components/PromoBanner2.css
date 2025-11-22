@@ -1,0 +1,186 @@
+.promo-banner-2 {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 80px 24px;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.promo-banner-2::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.1) 10px, rgba(255, 255, 255, 0.1) 20px);
+  opacity: 0.3;
+}
+
+.promo-banner-2-content {
+  max-width: 1280px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.promo-banner-2-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.promo-banner-2-pattern {
+  width: 100%;
+  max-width: 400px;
+  height: 300px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.promo-banner-2-pattern::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: repeating-conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0deg,
+    rgba(255, 255, 255, 0.2) 10deg,
+    transparent 20deg
+  );
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.promo-banner-2-text {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: #111;
+}
+
+.promo-banner-2-title {
+  font-size: 56px;
+  font-weight: 900;
+  color: #111;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: 2px;
+}
+
+.promo-banner-2-subtitle {
+  font-size: 20px;
+  color: #111;
+  margin: 0;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.promo-banner-2-discount {
+  font-size: 48px;
+  font-weight: 900;
+  color: #dc2626;
+  margin: 0;
+  line-height: 1;
+}
+
+.promo-banner-2-btn {
+  padding: 14px 32px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: fit-content;
+  margin-top: 8px;
+}
+
+.promo-banner-2-btn:hover {
+  background: #2d2d2d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 968px) {
+  .promo-banner-2-content {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    text-align: center;
+  }
+
+  .promo-banner-2-text {
+    align-items: center;
+  }
+
+  .promo-banner-2-title {
+    font-size: 42px;
+  }
+
+  .promo-banner-2-subtitle {
+    font-size: 18px;
+  }
+
+  .promo-banner-2-discount {
+    font-size: 36px;
+  }
+
+  .promo-banner-2-btn {
+    margin: 8px auto 0;
+  }
+
+  .promo-banner-2-pattern {
+    max-width: 300px;
+    height: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .promo-banner-2 {
+    padding: 60px 16px;
+    min-height: 350px;
+  }
+
+  .promo-banner-2-title {
+    font-size: 32px;
+  }
+
+  .promo-banner-2-subtitle {
+    font-size: 16px;
+  }
+
+  .promo-banner-2-discount {
+    font-size: 28px;
+  }
+
+  .promo-banner-2-pattern {
+    max-width: 250px;
+    height: 200px;
+  }
+}
+
