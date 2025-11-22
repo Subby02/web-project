@@ -55,8 +55,17 @@ export default function CartSidebar({ isOpen, onClose }) {
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
-    alert(`결제 페이지로 이동합니다. 총액: ₩${calculateTotal().toLocaleString()}`);
-    // 실제로는 결제 페이지로 이동
+    alert(`결제가 완료되었습니다. 총액: ₩${calculateTotal().toLocaleString()}`);
+    
+    // 장바구니 전체 삭제
+    setCart([]);
+    localStorage.removeItem('cart');
+    
+    // 장바구니 업데이트 이벤트 발생 (헤더에서 카운트 업데이트용)
+    window.dispatchEvent(new CustomEvent('cartUpdated'));
+    
+    // 사이드바 닫기
+    onClose();
   };
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
