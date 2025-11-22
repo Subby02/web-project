@@ -32,6 +32,11 @@ const productSchema = new mongoose.Schema(
       min: 0,
       max: 100,
     },
+    gender: {
+      type: String,
+      enum: ['남성', '여성', '공용'],
+      default: '남성',
+    },
     categories: {
       type: [String],
       default: [],
@@ -44,12 +49,25 @@ const productSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
-    color: {
-      type: String,
-      trim: true,
-    },
-    image: {
-      type: String,
+    colorVariants: {
+      type: [
+        {
+          name: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+          images: {
+            type: [String],
+            default: [],
+          },
+          thumbnail: {
+            type: String,
+            default: '',
+          },
+        },
+      ],
+      default: [],
     },
     salesVolume: {
       type: Number,
