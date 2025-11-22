@@ -1,22 +1,77 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import API_BASE_URL from '../config/api';
+import { getLocalCartCount } from '../utils/cartStorage';
 import './Header.css';
 
 export default function Header({ onCartClick = () => {} }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(null);
   const [cartCount, setCartCount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const toggle = (key) => setOpen(key);
   const close = () => setOpen(null);
 
+  // 로그인 상태 확인
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+          credentials: 'include',
+        });
+        const data = await response.json();
+        // /api/auth/me는 항상 200을 반환하고 authenticated 필드로 로그인 상태 확인
+        setIsLoggedIn(data?.authenticated === true);
+      } catch (error) {
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkAuth();
+
+    // 로그인 상태 변경 이벤트 리스너
+    const handleAuthChange = () => {
+      checkAuth().then(() => {
+        // 로그인 상태 변경 후 장바구니 카운트 업데이트
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
+      });
+    };
+
+    window.addEventListener('authChanged', handleAuthChange);
+    return () => window.removeEventListener('authChanged', handleAuthChange);
+  }, []);
+
+  const handleMyPageClick = (e) => {
+    e.preventDefault();
+    // 항상 마이페이지로 이동하고, ProtectedRoute가 인증을 체크하여
+    // 로그인되지 않았으면 로그인 페이지로 리다이렉트함
+    navigate('/mypage');
+  };
+
   useEffect(() => {
     // 장바구니 개수 로드 및 업데이트
-    const updateCartCount = () => {
-      try {
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        setCartCount(totalItems);
-      } catch (err) {
-        setCartCount(0);
+    const updateCartCount = async () => {
+      if (isLoggedIn) {
+        // 로그인된 경우: 서버 장바구니
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/cart`, {
+            credentials: 'include',
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const totalItems = data.reduce((sum, item) => sum + item.quantity, 0);
+            setCartCount(totalItems);
+          } else {
+            setCartCount(0);
+          }
+        } catch (err) {
+          setCartCount(0);
+        }
+      } else {
+        // 로그인하지 않은 경우: 로컬 스토리지 장바구니
+        const localCount = getLocalCartCount();
+        setCartCount(localCount);
       }
     };
 
@@ -27,9 +82,18 @@ export default function Header({ onCartClick = () => {} }) {
       updateCartCount();
     };
 
+    // 장바구니 카운트만 업데이트 (수량 변경 시 전체 로드하지 않음)
+    const handleCartCountUpdate = () => {
+      updateCartCount();
+    };
+
     window.addEventListener('cartUpdated', handleCartUpdate);
-    return () => window.removeEventListener('cartUpdated', handleCartUpdate);
-  }, []);
+    window.addEventListener('cartCountUpdated', handleCartCountUpdate);
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('cartCountUpdated', handleCartCountUpdate);
+    };
+  }, [isLoggedIn]);
 
   return (
     <header className="header-wrap" onMouseLeave={close}>
@@ -61,7 +125,14 @@ export default function Header({ onCartClick = () => {} }) {
         </nav>
         <div className="header-icon-group">
           <button className="header-icon-button" aria-label="검색">🔍</button>
-          <button className="header-icon-button" aria-label="계정">👤</button>
+          <button 
+            className="header-icon-button" 
+            aria-label="계정" 
+            onClick={handleMyPageClick}
+            title={isLoggedIn ? '마이페이지' : '로그인'}
+          >
+            👤
+          </button>
           <button className="header-icon-button" aria-label="장바구니" onClick={onCartClick}>
             🛒
             {cartCount > 0 && <span className="header-cart-badge">{cartCount}</span>}

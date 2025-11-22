@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import API_BASE_URL from '../config/api';
+import { addToLocalCart } from '../utils/cartStorage';
 import './ProductDetail.css';
 
 export default function ProductDetail() {
@@ -101,60 +102,125 @@ export default function ProductDetail() {
       alert('사이즈를 선택해주세요.');
       return;
     }
-    
-    const cartItem = {
-      productId: product.id,
-      productName: product.name,
-      color: selectedColor,
-      gender: selectedGender,
-      size: selectedSize,
-      price: product.price,
-      image: images[0] || product.images?.[0],
-      quantity: 1
-    };
 
+    // 로그인 상태 확인
+    let isLoggedIn = false;
     try {
-      // 로컬 스토리지에 장바구니 저장 (또는 API 호출)
-      const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const existingItemIndex = existingCart.findIndex(
-        item => item.productId === cartItem.productId && 
-                item.color === cartItem.color && 
-                item.size === cartItem.size
-      );
+      const authResponse = await fetch(`${API_BASE_URL}/api/auth/me`, {
+        credentials: 'include',
+      });
+      const authData = await authResponse.json();
+      isLoggedIn = authData?.authenticated === true;
+    } catch (error) {
+      isLoggedIn = false;
+    }
 
-      if (existingItemIndex >= 0) {
-        existingCart[existingItemIndex].quantity += 1;
-      } else {
-        existingCart.push(cartItem);
+    if (isLoggedIn) {
+      // 로그인된 경우: 서버에 저장
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/cart`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            productId: product.id,
+            size: selectedSize,
+            quantity: 1,
+          }),
+        });
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          throw new Error(`서버 오류: ${response.status}. 백엔드 서버가 실행 중인지 확인해주세요.`);
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            alert('로그인이 필요합니다. 로그인 후 다시 시도해주세요.');
+            return;
+          }
+          throw new Error(data.message || '장바구니 추가에 실패했습니다.');
+        }
+
+        alert('장바구니에 추가되었습니다.');
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
+        window.dispatchEvent(new CustomEvent('openCart'));
+      } catch (err) {
+        if (err.message.includes('Failed to fetch') || err.message.includes('ERR_CONNECTION_REFUSED')) {
+          alert(`백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요. (${API_BASE_URL})`);
+        } else {
+          alert(err.message || '장바구니 추가 중 오류가 발생했습니다.');
+        }
       }
-
-      localStorage.setItem('cart', JSON.stringify(existingCart));
-      
-      // 장바구니 업데이트 이벤트 발생 (헤더에서 카운트 업데이트용)
+    } else {
+      // 로그인하지 않은 경우: 로컬 스토리지에 저장
+      addToLocalCart(product, selectedSize, 1, selectedColor);
+      alert('장바구니에 추가되었습니다.');
       window.dispatchEvent(new CustomEvent('cartUpdated'));
-      
-      // 장바구니 사이드바 자동 열기
       window.dispatchEvent(new CustomEvent('openCart'));
-    } catch (err) {
-      console.error('장바구니 추가 오류:', err);
-      alert('장바구니 추가 중 오류가 발생했습니다.');
     }
   };
 
   // 결제하기 함수
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!selectedSize) {
       alert('사이즈를 선택해주세요.');
       return;
     }
-    
-    alert('결제가 완료되었습니다.');
-    
-    // 장바구니 전체 삭제
-    localStorage.removeItem('cart');
-    
-    // 장바구니 업데이트 이벤트 발생 (헤더에서 카운트 업데이트용)
-    window.dispatchEvent(new CustomEvent('cartUpdated'));
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // 세션 쿠키 전송
+        body: JSON.stringify({
+          items: [
+            {
+              productId: product.id,
+              quantity: 1,
+              size: selectedSize,
+            },
+          ],
+        }),
+      });
+
+      // Content-Type 확인
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('서버 응답 (HTML):', text.substring(0, 200));
+        throw new Error(`서버 오류: ${response.status}. 백엔드 서버가 실행 중인지 확인해주세요.`);
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert('로그인이 필요합니다. 로그인 후 다시 시도해주세요.');
+          return;
+        }
+        throw new Error(data.message || '주문에 실패했습니다.');
+      }
+
+      alert('주문이 완료되었습니다!');
+      
+      // 장바구니 업데이트 이벤트 발생
+      window.dispatchEvent(new CustomEvent('cartUpdated'));
+    } catch (err) {
+      console.error('주문 오류:', err);
+      if (err.message.includes('Failed to fetch') || err.message.includes('ERR_CONNECTION_REFUSED')) {
+        alert(`백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요. (${API_BASE_URL})`);
+      } else {
+        alert(err.message || '주문 중 오류가 발생했습니다.');
+      }
+    }
   };
 
   return (

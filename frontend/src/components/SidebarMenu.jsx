@@ -1,4 +1,4 @@
-function SidebarMenu({ activeSection, onChange }) {
+function SidebarMenu({ activeSection, onChange, onLogout }) {
   return (
     <aside className="mypage-sidebar">
       <div className="sidebar-header">
@@ -19,6 +19,14 @@ function SidebarMenu({ activeSection, onChange }) {
           지난 주문내역
         </button>
       </nav>
+      <div className="sidebar-footer">
+        <a href="#" className="sidebar-logout-link" onClick={(e) => {
+          e.preventDefault()
+          onLogout()
+        }}>
+          로그아웃
+        </a>
+      </div>
     </aside>
   )
 }

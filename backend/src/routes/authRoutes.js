@@ -95,7 +95,7 @@ router.post('/logout', (req, res) => {
 
 router.get('/me', async (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).json({ message: '로그인이 필요합니다.' });
+    return res.status(200).json({ authenticated: false });
   }
 
   try {
@@ -104,12 +104,16 @@ router.get('/me', async (req, res) => {
     );
 
     if (!user) {
-      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+      return res.status(200).json({ authenticated: false });
     }
 
-    res.json(user);
+    // 사용자 정보와 authenticated 필드 함께 반환
+    res.status(200).json({
+      authenticated: true,
+      ...user.toObject(),
+    });
   } catch (error) {
-    res.status(500).json({ message: '사용자 정보를 불러오는 중 오류가 발생했습니다.' });
+    res.status(200).json({ authenticated: false });
   }
 });
 
