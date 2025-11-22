@@ -43,8 +43,10 @@ lerna-debug.log*
 
 # OS files
 Thumbs.db
+.DS_Store
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
+
