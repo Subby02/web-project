@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../config/api';
+import HeroSlider from '../components/HeroSlider';
 import './Home.css';
 
 export default function Home(){
@@ -86,22 +87,15 @@ export default function Home(){
   return (
     <div className="home-wrapper">
       <section className="home-section full-width">
-        <div className="hero-banner">
-          <h1 className="hero-title">슈퍼 블랙 프라이데이 세일</h1>
-          <p className="hero-subtitle">세상에서 가장 편한 신발, 올버즈 | ~50% OFF</p>
-          <div className="home-button-group">
-            <a href="#" className="home-button primary">남성 세일</a>
-            <a href="#" className="home-button">여성 세일</a>
-          </div>
-        </div>
+        <HeroSlider />
       </section>
 
       <section className="home-section">
-        <h2 className="section-title left">실시간 인기</h2>
-        {loading && <div style={{ textAlign: 'center', padding: '48px' }}>로딩 중...</div>}
-        {error && <div style={{ textAlign: 'center', padding: '48px', color: '#d22' }}>{error}</div>}
+        {loading && <div className="loading-state">로딩 중...</div>}
+        {error && <div className="error-state">{error}</div>}
         {!loading && !error && popularProducts.length > 0 && (
           <div className="slider-container">
+            <h2 className="section-title left slider-title">실시간 인기</h2>
             <button className="slider-button left" onClick={handlePrev} disabled={sliderOffset === 0}>
               ‹
             </button>
@@ -120,8 +114,8 @@ export default function Home(){
                     <div className="product-badge">{idx + 1}</div>
                     <img alt={product.name} src={product.image || 'https://via.placeholder.com/600'} />
                     <div>
-                      <div className="product-name">{product.color || ''}</div>
                       <strong className="product-title">{product.name}</strong>
+                      <div className="product-name">{product.color || ''}</div>
                       <div className="product-price">
                         {product.originalPrice && (
                           <span className="original-price">₩{product.originalPrice.toLocaleString()}</span>
@@ -144,14 +138,14 @@ export default function Home(){
           </div>
         )}
         {!loading && !error && popularProducts.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '48px' }}>인기 상품이 없습니다.</div>
+          <div className="empty-state">인기 상품이 없습니다.</div>
         )}
       </section>
 
-      <section className="home-section full-width">
+      <section className="home-section">
         <div className="materials-section">
-          <h2 className="section-title no-margin">우리가 사용하는 소재</h2>
           <div className="materials-grid">
+            <h2 className="section-title no-margin left materials-title">우리가 사용하는 소재</h2>
             {materials.map((material, idx) => (
               <div key={idx} className="material-card">
                 <img src={material.image} alt={material.name} />
@@ -187,31 +181,36 @@ export default function Home(){
         </div>
       </section>
 
-      <section className="home-section full-width">
-        <div className="brand-section">
-          <div className="brand-card bg-light-green">
-            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop" alt="편안함" />
-            <h3>매일 경험하는 편안함</h3>
-            <p>
-              올버는 마치 구름 위를 걷는 듯한 가벼움과, 바람처럼 자유로운 탄력을 선사합니다. 
-              놀라운 편안함은 긴 여정도 짧은 산책처럼 느껴집니다.
-            </p>
-          </div>
-          <div className="brand-card dark bg-dark">
-            <img src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=600&h=400&fit=crop" alt="지속가능성" />
-            <h3>지속 가능한 발걸음</h3>
-            <p>
-              소재를 고르는 순간부터 신발이 당신에게 닿는 그 순간까지 지구에 남기는 흔적을 헤아립니다. 
-              탄소 발자국을 제로에 가깝게 줄이려는 노력에 동참해주세요.
-            </p>
-          </div>
-          <div className="brand-card bg-light-gray">
-            <img src="https://images.unsplash.com/photo-1585121508800-1015a9e0d0e5?w=600&h=400&fit=crop" alt="소재" />
-            <h3>지구에서 온 소재</h3>
-            <p>
-              올버즈는 가능한 모든 곳에서 석유 기반 합성소재를 천연 대안으로 대체합니다. 
-              울, 나무, 사탕수수 같은 자연 소재는 부드럽고 통기성이 좋습니다.
-            </p>
+      <section className="home-section">
+        <div className="materials-section">
+          <div className="materials-grid">
+            <div className="material-card">
+              <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop" alt="편안함" />
+              <h3>매일 경험하는 편안함</h3>
+              <p>
+                올버는 마치 구름 위를 걷는 듯한 가벼움과, 바람처럼 자유로운 탄력을 선사합니다. 
+                놀라운 편안함은 긴 여정도 짧은 산책처럼 느껴집니다.
+              </p>
+              <a href="#">더 알아보기 →</a>
+            </div>
+            <div className="material-card">
+              <img src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=600&h=400&fit=crop" alt="지속가능성" />
+              <h3>지속 가능한 발걸음</h3>
+              <p>
+                소재를 고르는 순간부터 신발이 당신에게 닿는 그 순간까지 지구에 남기는 흔적을 헤아립니다. 
+                탄소 발자국을 제로에 가깝게 줄이려는 노력에 동참해주세요.
+              </p>
+              <a href="#">더 알아보기 →</a>
+            </div>
+            <div className="material-card">
+              <img src="https://images.unsplash.com/photo-1585121508800-1015a9e0d0e5?w=600&h=400&fit=crop" alt="소재" />
+              <h3>지구에서 온 소재</h3>
+              <p>
+                올버즈는 가능한 모든 곳에서 석유 기반 합성소재를 천연 대안으로 대체합니다. 
+                울, 나무, 사탕수수 같은 자연 소재는 부드럽고 통기성이 좋습니다.
+              </p>
+              <a href="#">더 알아보기 →</a>
+            </div>
           </div>
         </div>
       </section>
