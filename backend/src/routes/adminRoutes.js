@@ -2,6 +2,7 @@ const express = require('express');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const User = require('../models/User');
+const upload = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -104,6 +105,22 @@ router.patch('/products/:id/sizes', requireAdmin, async (req, res) => {
   }
 });
 
+// 이미지 업로드
+router.post('/upload', requireAdmin, upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: '이미지 파일이 필요합니다.' });
+    }
+
+    // 업로드된 파일의 URL 반환
+    const imageUrl = `/uploads/${req.file.filename}`;
+    res.json({ url: imageUrl });
+  } catch (error) {
+    console.error('이미지 업로드 오류:', error);
+    res.status(500).json({ message: '이미지 업로드 중 오류가 발생했습니다.' });
+  }
+});
+
 // 할인 정책 수정
 router.patch('/products/:id/discount', requireAdmin, async (req, res) => {
   try {
@@ -167,11 +184,24 @@ router.post('/products', requireAdmin, async (req, res) => {
       sizes,
       materials,
       colorVariants,
+      discountRate,
+      saleStart,
+      saleEnd,
     } = req.body;
 
     // 필수 필드 검증
     if (!name || !description || !price || !releaseDate) {
       return res.status(400).json({ message: '필수 필드가 누락되었습니다.' });
+    }
+
+    // 카테고리 유효성 검사: 슬립온, 라이프스타일만 허용
+    const validCategories = ['슬립온', '라이프스타일'];
+    let validCategoryArray = [];
+    if (categories && Array.isArray(categories)) {
+      validCategoryArray = categories.filter(cat => validCategories.includes(cat));
+    } else if (categories && typeof categories === 'string') {
+      const categoryList = categories.split(',').map(c => c.trim()).filter(Boolean);
+      validCategoryArray = categoryList.filter(cat => validCategories.includes(cat));
     }
 
     // 사이즈 유효성 검사 - 문자열로 저장
@@ -204,17 +234,40 @@ router.post('/products', requireAdmin, async (req, res) => {
       return res.status(400).json({ message: '색상 변형(colorVariants)이 필요합니다.' });
     }
 
-    const product = await Product.create({
+    // 할인 정보 유효성 검사
+    let validDiscountRate = 0;
+    if (discountRate !== undefined && discountRate !== null && discountRate !== '') {
+      validDiscountRate = Number(discountRate);
+      if (isNaN(validDiscountRate) || validDiscountRate < 0 || validDiscountRate > 100) {
+        return res.status(400).json({ message: '할인율은 0~100 사이의 숫자여야 합니다.' });
+      }
+    }
+
+    // 세일 기간 설정
+    const productData = {
       name,
       description,
       price: Number(price),
       releaseDate: new Date(releaseDate),
-      categories: categories || [],
+      categories: validCategoryArray,
       sizes: validSizes,
       materials: materials || [],
       colorVariants: validColorVariants,
       gender: '남성', // 기본값
-    });
+      discountRate: validDiscountRate,
+    };
+
+    // 할인율이 0보다 크면 세일 기간도 설정
+    if (validDiscountRate > 0) {
+      if (saleStart) {
+        productData.saleStart = new Date(saleStart);
+      }
+      if (saleEnd) {
+        productData.saleEnd = new Date(saleEnd);
+      }
+    }
+
+    const product = await Product.create(productData);
 
     // 응답은 숫자 배열로 변환 (프론트엔드 호환성)
     const sizesArray = (product.sizes || []).map((size) => Number(size));
@@ -230,6 +283,13 @@ router.post('/products', requireAdmin, async (req, res) => {
       materials: product.materials || [],
       colorVariants: product.colorVariants || [],
       image: product.colorVariants?.[0]?.images?.[0] || product.colorVariants?.[0]?.thumbnail || '',
+      discountRate: product.discountRate || 0,
+      saleStart: product.saleStart
+        ? product.saleStart.toISOString().split('T')[0]
+        : null,
+      saleEnd: product.saleEnd
+        ? product.saleEnd.toISOString().split('T')[0]
+        : null,
     });
   } catch (error) {
     console.error('상품 등록 오류:', error);

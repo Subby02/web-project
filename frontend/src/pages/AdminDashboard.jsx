@@ -12,15 +12,20 @@ const MATERIAL_OPTIONS = [
 const currency = (value) =>
   value.toLocaleString('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 })
 
+const CATEGORY_OPTIONS = ['슬립온', '라이프스타일']
+
 const emptyProduct = {
   name: '',
   description: '',
   price: '',
   releaseDate: '',
-  categories: '',
-  colorVariants: [{ name: '', images: [''], thumbnail: '' }],
+  categories: [],
+  colorVariants: [{ name: '', images: [], thumbnail: '', imageFiles: [] }],
   sizes: [],
   materials: [],
+  discountRate: '',
+  saleStart: '',
+  saleEnd: '',
 }
 
 function AdminDashboard() {
@@ -235,10 +240,19 @@ function AdminDashboard() {
     })
   }
 
+  const toggleNewProductCategory = (category) => {
+    setNewProduct((prev) => {
+      const next = new Set(prev.categories)
+      if (next.has(category)) next.delete(category)
+      else next.add(category)
+      return { ...prev, categories: Array.from(next) }
+    })
+  }
+
   const addColorVariant = () => {
     setNewProduct((prev) => ({
       ...prev,
-      colorVariants: [...prev.colorVariants, { name: '', images: [''], thumbnail: '' }],
+      colorVariants: [...prev.colorVariants, { name: '', images: [], thumbnail: '', imageFiles: [] }],
     }))
   }
 
@@ -253,20 +267,79 @@ function AdminDashboard() {
     setNewProduct((prev) => {
       const updated = [...prev.colorVariants]
       updated[index] = { ...updated[index], [field]: value }
-      // thumbnail이 비어있으면 첫 번째 이미지를 thumbnail로 사용
-      if (field === 'images' && !updated[index].thumbnail && value.length > 0 && value[0]) {
-        updated[index].thumbnail = value[0]
-      }
       return { ...prev, colorVariants: updated }
     })
+  }
+
+  const handleImageUpload = async (variantIndex, imageIndex, file) => {
+    if (!file) return
+
+    // 파일 크기 검증 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      window.alert('파일 크기는 5MB 이하여야 합니다.')
+      return
+    }
+
+    // 파일 타입 검증
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      window.alert('이미지 파일만 업로드 가능합니다. (jpeg, jpg, png, gif, webp)')
+      return
+    }
+
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const response = await fetch(`${API_BASE_URL}/api/admin/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.message || '이미지 업로드에 실패했습니다.')
+      }
+
+      const data = await response.json()
+      const imageUrl = `${API_BASE_URL}${data.url}`
+
+      // 이미지 URL을 상태에 추가
+      setNewProduct((prev) => {
+        const updated = [...prev.colorVariants]
+        const currentImages = [...(updated[variantIndex].images || [])]
+        
+        // 이미지 배열 크기 조정
+        while (currentImages.length <= imageIndex) {
+          currentImages.push('')
+        }
+        currentImages[imageIndex] = imageUrl
+
+        updated[variantIndex] = {
+          ...updated[variantIndex],
+          images: currentImages,
+        }
+
+        // 첫 번째 이미지가 추가되고 thumbnail이 비어있으면 자동 설정
+        if (imageIndex === 0 && !updated[variantIndex].thumbnail) {
+          updated[variantIndex].thumbnail = imageUrl
+        }
+
+        return { ...prev, colorVariants: updated }
+      })
+    } catch (err) {
+      window.alert(err.message || '이미지 업로드 중 오류가 발생했습니다.')
+    }
   }
 
   const addImageToVariant = (variantIndex) => {
     setNewProduct((prev) => {
       const updated = [...prev.colorVariants]
+      const currentImages = updated[variantIndex].images || []
       updated[variantIndex] = {
         ...updated[variantIndex],
-        images: [...updated[variantIndex].images, ''],
+        images: [...currentImages, ''],
       }
       return { ...prev, colorVariants: updated }
     })
@@ -275,24 +348,20 @@ function AdminDashboard() {
   const removeImageFromVariant = (variantIndex, imageIndex) => {
     setNewProduct((prev) => {
       const updated = [...prev.colorVariants]
+      const newImages = updated[variantIndex].images.filter((_, i) => i !== imageIndex)
+      
+      // 첫 번째 이미지가 삭제되면 다음 이미지를 썸네일로 설정
+      let newThumbnail = updated[variantIndex].thumbnail
+      if (imageIndex === 0 && newImages.length > 0) {
+        newThumbnail = newImages[0]
+      } else if (newImages.length === 0) {
+        newThumbnail = ''
+      }
+      
       updated[variantIndex] = {
         ...updated[variantIndex],
-        images: updated[variantIndex].images.filter((_, i) => i !== imageIndex),
-      }
-      return { ...prev, colorVariants: updated }
-    })
-  }
-
-  const updateImageInVariant = (variantIndex, imageIndex, value) => {
-    setNewProduct((prev) => {
-      const updated = [...prev.colorVariants]
-      updated[variantIndex] = {
-        ...updated[variantIndex],
-        images: updated[variantIndex].images.map((img, i) => (i === imageIndex ? value : img)),
-      }
-      // 첫 번째 이미지가 추가되고 thumbnail이 비어있으면 자동 설정
-      if (imageIndex === 0 && value && !updated[variantIndex].thumbnail) {
-        updated[variantIndex].thumbnail = value
+        images: newImages,
+        thumbnail: newThumbnail,
       }
       return { ...prev, colorVariants: updated }
     })
@@ -344,13 +413,13 @@ function AdminDashboard() {
         description: newProduct.description.trim(),
         price: Number(newProduct.price),
         releaseDate: newProduct.releaseDate,
-        categories: newProduct.categories
-          .split(',')
-          .map((value) => value.trim())
-          .filter(Boolean),
+        categories: newProduct.categories || [],
         sizes: newProduct.sizes.map(Number), // 숫자 배열로 전송 (백엔드에서 문자열로 변환)
         materials: newProduct.materials,
         colorVariants: validColorVariants,
+        discountRate: newProduct.discountRate ? Number(newProduct.discountRate) : 0,
+        saleStart: newProduct.saleStart || undefined,
+        saleEnd: newProduct.saleEnd || undefined,
       }
 
       const response = await fetch(`${API_BASE_URL}/api/admin/products`, {
@@ -563,15 +632,21 @@ function AdminDashboard() {
               />
             </label>
           </div>
-          <label>
-            카테고리(쉼표 구분)
-            <input
-              type="text"
-              placeholder="예: 신발, 라이프스타일"
-              value={newProduct.categories}
-              onChange={(event) => handleNewProductChange('categories', event.target.value)}
-            />
-          </label>
+          <div className="admin-form-group">
+            <p className="admin-form-group__label">카테고리</p>
+            <div className="material-list material-list--horizontal">
+              {CATEGORY_OPTIONS.map((category) => (
+                <label key={category} className="material-list__item">
+                  <input
+                    type="checkbox"
+                    checked={newProduct.categories.includes(category)}
+                    onChange={() => toggleNewProductCategory(category)}
+                  />
+                  <span>{category}</span>
+                </label>
+              ))}
+            </div>
+          </div>
           
           <div className="admin-form-group">
             <div className="admin-form-group__header">
@@ -604,19 +679,9 @@ function AdminDashboard() {
                   )}
                 </div>
                 
-                <label className="color-variant-thumbnail">
-                  썸네일 URL
-                  <input
-                    type="url"
-                    placeholder="썸네일 이미지 URL (선택사항)"
-                    value={variant.thumbnail}
-                    onChange={(event) => updateColorVariant(variantIndex, 'thumbnail', event.target.value)}
-                  />
-                </label>
-
                 <div className="color-variant-images">
                   <div className="color-variant-images-header">
-                    <p className="admin-form-group__label">이미지 URL *</p>
+                    <p className="admin-form-group__label">이미지 업로드 *</p>
                     <button
                       type="button"
                       className="admin-button admin-button--small"
@@ -627,21 +692,36 @@ function AdminDashboard() {
                   </div>
                   {variant.images.map((image, imageIndex) => (
                     <div key={imageIndex} className="image-input-row">
-                      <input
-                        type="url"
-                        placeholder={`이미지 URL ${imageIndex + 1}`}
-                        value={image}
-                        onChange={(event) => updateImageInVariant(variantIndex, imageIndex, event.target.value)}
-                        required
-                      />
-                      {variant.images.length > 1 && (
-                        <button
-                          type="button"
-                          className="admin-button admin-button--small admin-button--danger"
-                          onClick={() => removeImageFromVariant(variantIndex, imageIndex)}
-                        >
-                          삭제
-                        </button>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '100%' }}>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0]
+                            if (file) {
+                              handleImageUpload(variantIndex, imageIndex, file)
+                            }
+                          }}
+                          required={imageIndex === 0}
+                          style={{ flex: 1 }}
+                        />
+                        {variant.images.length > 1 && (
+                          <button
+                            type="button"
+                            className="admin-button admin-button--small admin-button--danger"
+                            onClick={() => removeImageFromVariant(variantIndex, imageIndex)}
+                          >
+                            삭제
+                          </button>
+                        )}
+                      </div>
+                      {image && (
+                        <div className="image-preview">
+                          <img src={image} alt={`미리보기 ${imageIndex + 1}`} />
+                          {imageIndex === 0 && (
+                            <span className="thumbnail-badge">썸네일</span>
+                          )}
+                        </div>
                       )}
                     </div>
                   ))}
@@ -681,6 +761,40 @@ function AdminDashboard() {
               </div>
             </div>
           </div>
+          
+          <div className="admin-form-group">
+            <p className="admin-form-group__label">할인 정책 (선택사항)</p>
+            <div className="discount-form">
+              <label>
+                할인율(%)
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={newProduct.discountRate}
+                  onChange={(event) => handleNewProductChange('discountRate', event.target.value)}
+                  placeholder="0"
+                />
+              </label>
+              <label>
+                세일 시작일
+                <input
+                  type="date"
+                  value={newProduct.saleStart}
+                  onChange={(event) => handleNewProductChange('saleStart', event.target.value)}
+                />
+              </label>
+              <label>
+                세일 종료일
+                <input
+                  type="date"
+                  value={newProduct.saleEnd}
+                  onChange={(event) => handleNewProductChange('saleEnd', event.target.value)}
+                />
+              </label>
+            </div>
+          </div>
+          
           <button className="admin-button admin-button--primary" type="submit" disabled={creating}>
             {creating ? '등록 중...' : '상품 등록'}
           </button>

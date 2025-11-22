@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const { getDbState } = require('./config/database');
 const createSession = require('./config/session');
 const authRoutes = require('./routes/authRoutes');
@@ -20,6 +21,9 @@ app.use(
 );
 app.use(express.json());
 app.use(createSession());
+
+// 정적 파일 서빙 (업로드된 이미지)
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 app.get('/', (req, res) => {
   res.json({

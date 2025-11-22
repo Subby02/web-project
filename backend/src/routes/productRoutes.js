@@ -124,20 +124,28 @@ router.get('/', async (req, res) => {
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     const items = products.map((product) => {
+      // 세일 조건: saleStart와 saleEnd가 모두 있고, 현재 세일 기간인 경우
+      const hasSalePeriod = product.saleStart && product.saleEnd;
       const isOnSale =
+        hasSalePeriod &&
         product.discountRate > 0 &&
-        (!product.saleStart || now >= product.saleStart) &&
-        (!product.saleEnd || now <= product.saleEnd);
+        now >= product.saleStart &&
+        now <= product.saleEnd;
 
       // computedCategories 계산
-      const computedCategories = [...(product.categories || [])];
+      // categories는 슬립온, 라이프스타일만 허용
+      const validCategories = ['슬립온', '라이프스타일'];
+      const filteredCategories = (product.categories || []).filter(cat => 
+        validCategories.includes(cat)
+      );
+      const computedCategories = [...filteredCategories];
       
       // 신제품: 출시일이 최근 30일 이내
       if (product.releaseDate && product.releaseDate >= thirtyDaysAgo) {
         computedCategories.push('신제품');
       }
 
-      // 세일: 현재 할인 중
+      // 세일: saleStart와 saleEnd가 모두 있고 현재 세일 기간인 경우만
       if (isOnSale) {
         computedCategories.push('세일');
       }
@@ -232,10 +240,14 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ message: '상품을 찾을 수 없습니다.' });
     }
 
+    // 세일 조건: saleStart와 saleEnd가 모두 있고, 현재 세일 기간인 경우
+    const now = new Date();
+    const hasSalePeriod = product.saleStart && product.saleEnd;
     const isOnSale =
+      hasSalePeriod &&
       product.discountRate > 0 &&
-      (!product.saleStart || new Date() >= product.saleStart) &&
-      (!product.saleEnd || new Date() <= product.saleEnd);
+      now >= product.saleStart &&
+      now <= product.saleEnd;
 
     const originalPrice = isOnSale
       ? Math.round(product.price / (1 - product.discountRate / 100))

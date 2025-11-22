@@ -396,18 +396,50 @@
 
 .image-input-row {
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  margin-bottom: 8px;
-  align-items: flex-start;
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
 }
 
-.image-input-row input {
+.image-input-row input[type="file"] {
   flex: 1;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
   padding: 10px 12px;
   font-size: 1rem;
   font-family: inherit;
+  cursor: pointer;
+}
+
+.image-preview {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  margin-top: 8px;
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  object-fit: cover;
+}
+
+.thumbnail-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: #4338ca;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {
