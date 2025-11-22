@@ -2,8 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const { getDbState } = require('./config/database');
 const createSession = require('./config/session');
-const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
 
 const app = express();
 const allowedOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
@@ -36,8 +37,9 @@ app.post('/echo', (req, res) => {
   });
 });
 
-app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 module.exports = app;
 

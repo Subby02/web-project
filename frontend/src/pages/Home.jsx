@@ -1,26 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import API_BASE_URL from '../config/api';
 import './Home.css';
 
 export default function Home(){
   const [email, setEmail] = useState('');
   const [sliderOffset, setSliderOffset] = useState(0);
+  const [popularProducts, setPopularProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const popularProducts = [
-    {id: 'p1', name: '남성 울 러너 NZ', color: '내추럴 블랙 (내추럴 블랙)', price: 119000, originalPrice: 170000, sizes: [260, 265, 270, 275, 280], image: 'https://picsum.photos/seed/product1a/600/600'},
-    {id: 'p2', name: '남성 울 크루저 슬립온', color: '내추럴 화이트 (내추럴 화이트)', price: 170000, originalPrice: null, sizes: [260, 265, 270, 275], image: 'https://picsum.photos/seed/product2a/600/600'},
-    {id: 'p3', name: '남성 트리 러너 NZ', color: '내추럴 그레이 (라이트 그레이)', price: 119000, originalPrice: 170000, sizes: [270, 275, 280, 285], image: 'https://picsum.photos/seed/product3a/600/600'},
-    {id: 'p4', name: '남성 울 대셔 미즐', color: '스토니 크림 (내추럴 화이트)', price: 170000, originalPrice: null, sizes: [270, 275, 280, 285], image: 'https://picsum.photos/seed/product4a/600/600'},
-    {id: 'p5', name: '남성 트리 러너', color: '제트 블랙 (블랙)', price: 119000, originalPrice: 170000, sizes: [260, 270, 280], image: 'https://picsum.photos/seed/product5a/600/600'},
-    {id: 'p6', name: '여성 울 러너 NZ', color: '내추럴 블랙 (내추럴 블랙)', price: 119000, originalPrice: 170000, sizes: [230, 235, 240, 245], image: 'https://picsum.photos/seed/product6a/600/600'},
-    {id: 'p7', name: '여성 울 러너', color: '내추럴 화이트 (크림)', price: 170000, originalPrice: null, sizes: [230, 240, 250], image: 'https://picsum.photos/seed/product7a/600/600'},
-    {id: 'p8', name: '여성 트리 러너', color: '제트 블랙 (블랙)', price: 119000, originalPrice: 170000, sizes: [230, 240, 250], image: 'https://picsum.photos/seed/product8a/600/600'},
-    {id: 'p9', name: '남성 울 크루저', color: '내추럴 블랙 (내추럴 블랙)', price: 170000, originalPrice: null, sizes: [260, 265, 270, 275, 280], image: 'https://picsum.photos/seed/product9a/600/600'},
-    {id: 'p10', name: '여성 울 러너 고 플러프', color: '내추럴 화이트(내추럴 화이트)', price: 119000, originalPrice: 170000, sizes: [235, 240, 245, 250], image: 'https://picsum.photos/seed/product10a/600/600'},
-  ];
+  useEffect(() => {
+    const fetchPopularProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`${API_BASE_URL}/api/products/popular`);
+        if (!response.ok) {
+          throw new Error(`서버 오류: ${response.status}`);
+        }
+        const data = await response.json();
+        setPopularProducts(data);
+      } catch (err) {
+        console.error('Error fetching popular products:', err);
+        if (err.message.includes('Failed to fetch') || err.message.includes('ERR_CONNECTION_REFUSED')) {
+          setError(`백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요. (${API_BASE_URL})`);
+        } else {
+          setError(err.message || '인기 상품을 불러오는 중 오류가 발생했습니다.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPopularProducts();
+  }, []);
 
   const maxOffset = Math.max(0, popularProducts.length - 5);
-  const visibleProducts = 5;
 
   const handlePrev = () => {
     if (sliderOffset > 0) {
@@ -82,47 +98,54 @@ export default function Home(){
 
       <section className="home-section">
         <h2 className="section-title left">실시간 인기</h2>
-        <div className="slider-container">
-          <button className="slider-button left" onClick={handlePrev} disabled={sliderOffset === 0}>
-            ‹
-          </button>
-          <button className="slider-button right" onClick={handleNext} disabled={sliderOffset >= maxOffset}>
-            ›
-          </button>
-          <div className="slider-wrapper">
-            <div 
-              className="slider-track" 
-              style={{ 
-                '--slider-offset': `${calculateSliderTransform()}%`
-              } as React.CSSProperties}
-            >
-              {popularProducts.map((product, idx) => (
-                <Link key={product.id} to={`/products/${product.id}`} className="horizontal-card">
-                  <div className="product-badge">{idx + 1}</div>
-                  <img alt={product.name} src={product.image} />
-                  <div>
-                    <div className="product-name">{product.color}</div>
-                    <strong className="product-title">{product.name}</strong>
-                    <div className="product-price">
-                      {product.originalPrice && (
-                        <span className="original-price">₩{product.originalPrice.toLocaleString()}</span>
-                      )}
-                      <span className="sale-price">₩{product.price.toLocaleString()}</span>
-                    </div>
-                    <div className="product-sizes">
-                      <div className="size-label">주문 가능 사이즈</div>
-                      <div className="size-list">
-                        {product.sizes.map((size) => (
-                          <span key={size} className="size-tag">{size}</span>
-                        ))}
+        {loading && <div style={{ textAlign: 'center', padding: '48px' }}>로딩 중...</div>}
+        {error && <div style={{ textAlign: 'center', padding: '48px', color: '#d22' }}>{error}</div>}
+        {!loading && !error && popularProducts.length > 0 && (
+          <div className="slider-container">
+            <button className="slider-button left" onClick={handlePrev} disabled={sliderOffset === 0}>
+              ‹
+            </button>
+            <button className="slider-button right" onClick={handleNext} disabled={sliderOffset >= maxOffset}>
+              ›
+            </button>
+            <div className="slider-wrapper">
+              <div 
+                className="slider-track" 
+                style={{ 
+                  '--slider-offset': `${calculateSliderTransform()}%`
+                }}
+              >
+                {popularProducts.map((product, idx) => (
+                  <Link key={product.id} to={`/products/${product.id}`} className="horizontal-card">
+                    <div className="product-badge">{idx + 1}</div>
+                    <img alt={product.name} src={product.image || 'https://via.placeholder.com/600'} />
+                    <div>
+                      <div className="product-name">{product.color || ''}</div>
+                      <strong className="product-title">{product.name}</strong>
+                      <div className="product-price">
+                        {product.originalPrice && (
+                          <span className="original-price">₩{product.originalPrice.toLocaleString()}</span>
+                        )}
+                        <span className="sale-price">₩{product.price.toLocaleString()}</span>
+                      </div>
+                      <div className="product-sizes">
+                        <div className="size-label">주문 가능 사이즈</div>
+                        <div className="size-list">
+                          {product.sizes && product.sizes.map((size) => (
+                            <span key={size} className="size-tag">{size}</span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        {!loading && !error && popularProducts.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '48px' }}>인기 상품이 없습니다.</div>
+        )}
       </section>
 
       <section className="home-section full-width">

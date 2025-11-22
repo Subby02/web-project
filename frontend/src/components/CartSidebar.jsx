@@ -66,11 +66,11 @@ export default function CartSidebar({ isOpen, onClose }) {
       <div 
         className={`cart-overlay ${isOpen ? 'open' : ''}`} 
         onClick={onClose}
-        style={{ '--sidebar-open': isOpen ? 1 : 0 } as React.CSSProperties}
+        style={{ '--sidebar-open': isOpen ? 1 : 0 }}
       />
       <div 
         className="cart-sidebar"
-        style={{ '--sidebar-open': isOpen ? 1 : 0 } as React.CSSProperties}
+        style={{ '--sidebar-open': isOpen ? 1 : 0 }}
       >
         <div className="cart-sidebar-header">
           <button className="cart-close-button" onClick={onClose}>✕</button>

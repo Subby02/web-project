@@ -9,6 +9,9 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  /* CSS 변수 정의 */
+  --border: #e5e7eb;
 }
 
 *,

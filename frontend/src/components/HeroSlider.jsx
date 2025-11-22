@@ -24,7 +24,7 @@ export default function HeroSlider(){
     <section className="hero-slider-wrap">
       <div 
         className="hero-slider-track" 
-        style={{ '--slider-index': idx } as React.CSSProperties}
+        style={{ '--slider-index': idx }}
       >
         {slides.map((s,i)=> (
           <div key={i} className="hero-slider-slide">

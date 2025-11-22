@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import API_BASE_URL from '../config/api'
 import './StoreFront.css'
 
 const HIGHLIGHT_FILTERS = ['신제품', '라이프스타일', '세일', '슬립온']
@@ -18,7 +19,7 @@ const SORT_OPTIONS = [
 const currency = (value) =>
   value.toLocaleString('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 })
 
-const buildEndpoint = (path, params = {}) => {
+const buildEndpoint = (baseUrl, params = {}) => {
   const search = new URLSearchParams()
 
   Object.entries(params).forEach(([key, value]) => {
@@ -32,7 +33,7 @@ const buildEndpoint = (path, params = {}) => {
   })
 
   const query = search.toString()
-  return query ? `${path}?${query}` : path
+  return query ? `${baseUrl}?${query}` : baseUrl
 }
 
 const toggleFilter = (currentFilters, target) =>
@@ -77,7 +78,7 @@ function StoreFront() {
       setError(null)
       try {
         const response = await fetch(
-          buildEndpoint('/api/products', {
+          buildEndpoint(`${API_BASE_URL}/api/products`, {
             filters: selectedHighlights,
             sizes: selectedSizes,
             materials: selectedMaterials,

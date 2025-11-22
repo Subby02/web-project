@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
 
 export default function Header({ onCartClick = () => {} }) {
@@ -34,7 +35,7 @@ export default function Header({ onCartClick = () => {} }) {
     <header className="header-wrap" onMouseLeave={close}>
       <div className="header-bar">COMFY, LOW-KEY LUXURY | <b>남성</b>, <b>여성</b></div>
       <div className="header-row">
-        <div className="header-logo">allbirds</div>
+        <Link to="/" className="header-logo" style={{ textDecoration: 'none', color: 'inherit' }}>allbirds</Link>
         <nav className="header-nav">
           <div className="header-nav-item" onMouseEnter={close}>가을 컬렉션</div>
           <div 

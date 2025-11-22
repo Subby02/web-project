@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import API_BASE_URL from '../config/api';
 import './ProductDetail.css';
 
 export default function ProductDetail() {
@@ -18,14 +19,14 @@ export default function ProductDetail() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:4000/api/products/${id}`);
+        const res = await fetch(`${API_BASE_URL}/api/products/${id}`);
         if (!res.ok) throw new Error('제품을 찾을 수 없습니다.');
         const data = await res.json();
         setProduct(data);
         setSelectedColor(data.colors?.[0] || null);
         
         // 후기 가져오기
-        const reviewsRes = await fetch(`http://localhost:4000/api/reviews/${id}`);
+        const reviewsRes = await fetch(`${API_BASE_URL}/api/reviews/${id}`);
         if (reviewsRes.ok) {
           const reviewsData = await reviewsRes.json();
           // 최대 3개만 표시
