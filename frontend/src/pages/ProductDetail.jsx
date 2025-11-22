@@ -302,6 +302,37 @@ const AddToCartButton = styled.button`
   }
 `;
 
+const CheckoutButton = styled.button`
+  width: 100%;
+  padding: 16px 24px;
+  background: #d22;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 12px;
+  &:hover {
+    background: #b00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  &:active {
+    transform: translateY(0);
+  }
+  &:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  margin-top: 32px;
+`;
+
 const AccordionSection = styled.div`
   margin-top: 48px;
   border-top: 1px solid var(--border);
@@ -594,6 +625,22 @@ export default function ProductDetail() {
     }
   };
 
+  // 결제하기 함수
+  const handleCheckout = () => {
+    if (!selectedSize) {
+      alert('사이즈를 선택해주세요.');
+      return;
+    }
+    
+    alert('결제가 완료되었습니다.');
+    
+    // 장바구니 전체 삭제
+    localStorage.removeItem('cart');
+    
+    // 장바구니 업데이트 이벤트 발생 (헤더에서 카운트 업데이트용)
+    window.dispatchEvent(new CustomEvent('cartUpdated'));
+  };
+
   return (
     <Container>
       <Breadcrumb>
@@ -706,12 +753,20 @@ export default function ProductDetail() {
             </div>
           </StoreStockSection>
 
-          <AddToCartButton 
-            onClick={handleAddToCart}
-            disabled={!selectedSize}
-          >
-            장바구니에 추가
-          </AddToCartButton>
+          <ButtonGroup>
+            <AddToCartButton 
+              onClick={handleAddToCart}
+              disabled={!selectedSize}
+            >
+              장바구니에 추가
+            </AddToCartButton>
+            <CheckoutButton 
+              onClick={handleCheckout}
+              disabled={!selectedSize}
+            >
+              결제하기
+            </CheckoutButton>
+          </ButtonGroup>
         </InfoSection>
       </ProductWrapper>
 
