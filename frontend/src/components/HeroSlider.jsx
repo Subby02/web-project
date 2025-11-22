@@ -1,32 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import styled from 'styled-components';
-
-const Wrap = styled.section`
-  position:relative; overflow:hidden; max-width:1280px; margin:0 auto; border-radius:8px;
-`;
-
-const Track = styled.div`
-  display:flex; transition:transform .6s ease; transform:translateX(${p=>`-${p.idx*100}%`});
-`;
-
-const Slide = styled.div`
-  min-width:100%; height:520px; background:#eee; position:relative;
-  > img { width:100%; height:100%; object-fit:cover; }
-  > div { position:absolute; left:64px; bottom:64px; color:#fff; }
-  h2 { font-size:32px; margin:0 0 8px; }
-`;
-
-const Arrow = styled.button`
-  position:absolute; top:50%; transform:translateY(-50%); border:none; background:rgba(0,0,0,.4); color:#fff; width:36px; height:36px; border-radius:18px;
-  ${p=>p.left? 'left:16px;' : 'right:16px;'}
-`;
-
-const Dots = styled.div`
-  position:absolute; left:0; right:0; bottom:16px; display:flex; justify-content:center; gap:8px;
-`;
-const Dot = styled.button`
-  width:8px; height:8px; border-radius:4px; border:none; background:${p=>p.active?'#111':'#bbb'};
-`;
+import './HeroSlider.css';
 
 export default function HeroSlider(){
   const slides = useMemo(()=>[
@@ -48,29 +21,32 @@ export default function HeroSlider(){
   }, [idx, slides.length]);
 
   return (
-    <Wrap>
-      <Track idx={idx}>
+    <section className="hero-slider-wrap">
+      <div 
+        className="hero-slider-track" 
+        style={{ '--slider-index': idx } as React.CSSProperties}
+      >
         {slides.map((s,i)=> (
-          <Slide key={i}>
+          <div key={i} className="hero-slider-slide">
             <img src={s.img} alt={s.title} />
             <div>
               <h2>{s.title}</h2>
               <p>{s.sub}</p>
             </div>
-          </Slide>
+          </div>
         ))}
-      </Track>
-      <Arrow left onClick={prev}>‹</Arrow>
-      <Arrow onClick={next}>›</Arrow>
-      <Dots>
+      </div>
+      <button className="hero-slider-arrow left" onClick={prev}>‹</button>
+      <button className="hero-slider-arrow right" onClick={next}>›</button>
+      <div className="hero-slider-dots">
         {slides.map((_,i)=> (
-          <Dot key={i} active={i===idx} onClick={()=>setIdx(i)} />
+          <button 
+            key={i} 
+            className={`hero-slider-dot ${i===idx ? 'active' : ''}`} 
+            onClick={()=>setIdx(i)} 
+          />
         ))}
-      </Dots>
-    </Wrap>
+      </div>
+    </section>
   );
 }
-
-
-
-

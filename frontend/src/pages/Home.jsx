@@ -64,7 +64,7 @@ export default function Home(){
     const cardWidthPercent = 100 / 5;
     const gapPercent = window.innerWidth <= 768 ? 3.2 : 4.8;
     const offset = sliderOffset * (cardWidthPercent + gapPercent);
-    return `translateX(-${offset}%)`;
+    return offset;
   };
 
   return (
@@ -93,8 +93,8 @@ export default function Home(){
             <div 
               className="slider-track" 
               style={{ 
-                transform: calculateSliderTransform()
-              }}
+                '--slider-offset': `${calculateSliderTransform()}%`
+              } as React.CSSProperties}
             >
               {popularProducts.map((product, idx) => (
                 <Link key={product.id} to={`/products/${product.id}`} className="horizontal-card">

@@ -420,6 +420,7 @@
   display: flex;
   gap: 24px;
   transition: transform 0.5s ease;
+  transform: translateX(calc(-1 * var(--slider-offset, 0%)));
 }
 
 @media (max-width: 768px) {
