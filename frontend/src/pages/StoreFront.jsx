@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import './StoreFront.css'
 
 const HIGHLIGHT_FILTERS = ['신제품', '라이프스타일', '세일', '슬립온']
 const SIZE_OPTIONS = [260, 265, 270, 275, 280, 285, 290, 295, 300, 305, 310]

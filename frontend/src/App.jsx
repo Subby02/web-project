@@ -1,7 +1,7 @@
-import MyPage from './pages/MyPage'
+import StoreFront from './pages/StoreFront'
 
 function App() {
-  return <MyPage />
+  return <StoreFront />
 }
 
 export default App
