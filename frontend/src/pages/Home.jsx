@@ -56,17 +56,17 @@ export default function Home(){
     {
       name: 'ZQ 메리노 울',
       description: '최상급 울 소재',
-      image: 'https://images.unsplash.com/photo-1585121508800-1015a9e0d0e5?w=600&h=600&fit=crop'
+      image: 'https://sfycdn.speedsize.com/4aadaad8-50d5-458f-88dd-2f364bf4d82e/allbirds.co.kr/cdn/shop/files/e38945873be459407bd1e541c9ad5041.jpg?v=1740387850&width=1110'
     },
     {
       name: '유칼립투스 나무',
       description: '실크처럼 매끄러운 촉감',
-      image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=600&fit=crop'
+      image: 'https://sfycdn.speedsize.com/4aadaad8-50d5-458f-88dd-2f364bf4d82e/allbirds.co.kr/cdn/shop/files/d7fcf584905e3a719874b448d68aa0c8.jpg?v=1740387915&width=1110'
     },
     {
       name: '사탕수수',
       description: '부드러운 SweetFoam®의 주 소재',
-      image: 'https://images.unsplash.com/photo-1606923829579-0cb981a83e2e?w=600&h=600&fit=crop'
+      image: 'https://sfycdn.speedsize.com/4aadaad8-50d5-458f-88dd-2f364bf4d82e/allbirds.co.kr/cdn/shop/files/b4729b825b4d6790fb2e91d761ffaa28.jpg?v=1740387919&width=1110'
     }
   ];
 
@@ -185,7 +185,7 @@ export default function Home(){
         <div className="materials-section">
           <div className="materials-grid">
             <div className="material-card">
-              <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop" alt="편안함" />
+              <img src="https://allbirds.co.kr/cdn/shop/files/25Q2_BAU_Site_OurStoryLandingPage_Story-Carousel-08_Studio_Desktop_1x1_eaa761e1-229c-45c0-b96b-49c0fff1345c.webp?v=1753408340&width=900" alt="편안함" />
               <h3>매일 경험하는 편안함</h3>
               <p>
                 올버는 마치 구름 위를 걷는 듯한 가벼움과, 바람처럼 자유로운 탄력을 선사합니다. 
@@ -194,7 +194,7 @@ export default function Home(){
               <a href="#">더 알아보기 →</a>
             </div>
             <div className="material-card">
-              <img src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=600&h=400&fit=crop" alt="지속가능성" />
+              <img src="https://allbirds.co.kr/cdn/shop/files/25Q1_Moonshot_Site_LandingPage_600x501_P2.png?v=1742523878&width=900" alt="지속가능성" />
               <h3>지속 가능한 발걸음</h3>
               <p>
                 소재를 고르는 순간부터 신발이 당신에게 닿는 그 순간까지 지구에 남기는 흔적을 헤아립니다. 
@@ -203,7 +203,7 @@ export default function Home(){
               <a href="#">더 알아보기 →</a>
             </div>
             <div className="material-card">
-              <img src="https://images.unsplash.com/photo-1585121508800-1015a9e0d0e5?w=600&h=400&fit=crop" alt="소재" />
+              <img src="https://allbirds.co.kr/cdn/shop/files/25Q2_BAU_Site_OurStoryLandingPage_Story-Carousel-04_Studio_Desktop_2x3_e8297425-4182-45c0-bf21-cbf7a4f5293d.webp?v=1753408471&width=900" alt="소재" />
               <h3>지구에서 온 소재</h3>
               <p>
                 올버즈는 가능한 모든 곳에서 석유 기반 합성소재를 천연 대안으로 대체합니다. 

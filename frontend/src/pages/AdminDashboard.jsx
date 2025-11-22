@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import API_BASE_URL from '../config/api'
 import './AdminDashboard.css'
 
 const SIZE_OPTIONS = [260, 265, 270, 275, 280, 285, 290, 295, 300]
@@ -16,12 +18,13 @@ const emptyProduct = {
   price: '',
   releaseDate: '',
   categories: '',
-  image: '',
+  colorVariants: [{ name: '', images: [''], thumbnail: '' }],
   sizes: [],
   materials: [],
 }
 
 function AdminDashboard() {
+  const navigate = useNavigate()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -34,14 +37,18 @@ function AdminDashboard() {
   const [salesResult, setSalesResult] = useState(null)
   const [salesLoading, setSalesLoading] = useState(false)
   const [salesError, setSalesError] = useState(null)
+  const [checkingAuth, setCheckingAuth] = useState(true)
 
   const fetchProducts = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch('/api/admin/products')
+      const response = await fetch(`${API_BASE_URL}/api/admin/products`, {
+        credentials: 'include',
+      })
       if (!response.ok) {
-        throw new Error('상품 목록을 불러오지 못했습니다.')
+        const data = await response.json()
+        throw new Error(data.message || '상품 목록을 불러오지 못했습니다.')
       }
       const data = await response.json()
       setProducts(data.items ?? [])
@@ -54,9 +61,38 @@ function AdminDashboard() {
     }
   }, [])
 
+  // 관리자 권한 확인
   useEffect(() => {
-    fetchProducts()
-  }, [fetchProducts])
+    const checkAdminAuth = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+          credentials: 'include',
+        })
+        const data = await response.json()
+        
+        if (!data.authenticated || !data.isAdmin) {
+          // 관리자 권한이 없으면 홈페이지로 리다이렉트
+          navigate('/', { replace: true })
+          return
+        }
+        
+        // 관리자 권한이 있으면 상품 목록 로드
+        setCheckingAuth(false)
+      } catch (err) {
+        console.error('관리자 권한 확인 오류:', err)
+        navigate('/', { replace: true })
+      }
+    }
+    
+    checkAdminAuth()
+  }, [navigate])
+
+  // 권한 확인 후 상품 목록 로드
+  useEffect(() => {
+    if (!checkingAuth) {
+      fetchProducts()
+    }
+  }, [checkingAuth, fetchProducts])
 
   const initializeDrafts = (items) => {
     const sizeState = {}
@@ -64,8 +100,9 @@ function AdminDashboard() {
 
     items.forEach((product) => {
       sizeState[product.id] = product.sizes?.map((size) => String(size)) ?? []
+      // discountRate는 이미 0~100 사이의 백분율
       discountState[product.id] = {
-        rate: String(Math.round((product.discountRate ?? 0) * 100)),
+        rate: String(Math.round(product.discountRate ?? 0)),
         saleStart: product.saleStart ?? '',
         saleEnd: product.saleEnd ?? '',
       }
@@ -87,17 +124,28 @@ function AdminDashboard() {
   const saveSizes = async (productId) => {
     setSavingTarget(productId)
     try {
-      const response = await fetch(`/api/admin/products/${productId}/sizes`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/products/${productId}/sizes`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ sizes: sizeDrafts[productId]?.map((value) => Number(value)) ?? [] }),
       })
       if (!response.ok) {
-        const { error: message } = await response.json()
-        throw new Error(message ?? '사이즈 업데이트에 실패했습니다.')
+        const data = await response.json()
+        throw new Error(data.message || '사이즈 업데이트에 실패했습니다.')
       }
-      const { item } = await response.json()
-      setProducts((prev) => prev.map((product) => (product.id === item.id ? item : product)))
+      const data = await response.json()
+      // 응답: { id, sizes }
+      setProducts((prev) =>
+        prev.map((product) =>
+          product.id === data.id ? { ...product, sizes: data.sizes } : product
+        )
+      )
+      // drafts도 업데이트
+      setSizeDrafts((prev) => ({
+        ...prev,
+        [productId]: data.sizes.map(String),
+      }))
       window.alert('가용 사이즈가 저장되었습니다.')
     } catch (err) {
       window.alert(err.message)
@@ -120,21 +168,43 @@ function AdminDashboard() {
     setSavingTarget(productId)
     const draft = discountDrafts[productId] ?? { rate: '0', saleStart: '', saleEnd: '' }
     try {
-      const response = await fetch(`/api/admin/products/${productId}/discount`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/products/${productId}/discount`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           discountRate: Number(draft.rate),
-          saleStart: draft.saleStart || null,
-          saleEnd: draft.saleEnd || null,
+          saleStart: draft.saleStart || undefined,
+          saleEnd: draft.saleEnd || undefined,
         }),
       })
       if (!response.ok) {
-        const { error: message } = await response.json()
-        throw new Error(message ?? '할인 정책 저장에 실패했습니다.')
+        const data = await response.json()
+        throw new Error(data.message || '할인 정책 저장에 실패했습니다.')
       }
-      const { item } = await response.json()
-      setProducts((prev) => prev.map((product) => (product.id === item.id ? item : product)))
+      const data = await response.json()
+      // 응답: { id, discountRate, saleStart, saleEnd }
+      setProducts((prev) =>
+        prev.map((product) =>
+          product.id === data.id
+            ? {
+                ...product,
+                discountRate: data.discountRate,
+                saleStart: data.saleStart,
+                saleEnd: data.saleEnd,
+              }
+            : product
+        )
+      )
+      // drafts도 업데이트
+      setDiscountDrafts((prev) => ({
+        ...prev,
+        [productId]: {
+          rate: String(data.discountRate),
+          saleStart: data.saleStart || '',
+          saleEnd: data.saleEnd || '',
+        },
+      }))
       window.alert('할인 정책이 저장되었습니다.')
     } catch (err) {
       window.alert(err.message)
@@ -165,10 +235,110 @@ function AdminDashboard() {
     })
   }
 
+  const addColorVariant = () => {
+    setNewProduct((prev) => ({
+      ...prev,
+      colorVariants: [...prev.colorVariants, { name: '', images: [''], thumbnail: '' }],
+    }))
+  }
+
+  const removeColorVariant = (index) => {
+    setNewProduct((prev) => ({
+      ...prev,
+      colorVariants: prev.colorVariants.filter((_, i) => i !== index),
+    }))
+  }
+
+  const updateColorVariant = (index, field, value) => {
+    setNewProduct((prev) => {
+      const updated = [...prev.colorVariants]
+      updated[index] = { ...updated[index], [field]: value }
+      // thumbnail이 비어있으면 첫 번째 이미지를 thumbnail로 사용
+      if (field === 'images' && !updated[index].thumbnail && value.length > 0 && value[0]) {
+        updated[index].thumbnail = value[0]
+      }
+      return { ...prev, colorVariants: updated }
+    })
+  }
+
+  const addImageToVariant = (variantIndex) => {
+    setNewProduct((prev) => {
+      const updated = [...prev.colorVariants]
+      updated[variantIndex] = {
+        ...updated[variantIndex],
+        images: [...updated[variantIndex].images, ''],
+      }
+      return { ...prev, colorVariants: updated }
+    })
+  }
+
+  const removeImageFromVariant = (variantIndex, imageIndex) => {
+    setNewProduct((prev) => {
+      const updated = [...prev.colorVariants]
+      updated[variantIndex] = {
+        ...updated[variantIndex],
+        images: updated[variantIndex].images.filter((_, i) => i !== imageIndex),
+      }
+      return { ...prev, colorVariants: updated }
+    })
+  }
+
+  const updateImageInVariant = (variantIndex, imageIndex, value) => {
+    setNewProduct((prev) => {
+      const updated = [...prev.colorVariants]
+      updated[variantIndex] = {
+        ...updated[variantIndex],
+        images: updated[variantIndex].images.map((img, i) => (i === imageIndex ? value : img)),
+      }
+      // 첫 번째 이미지가 추가되고 thumbnail이 비어있으면 자동 설정
+      if (imageIndex === 0 && value && !updated[variantIndex].thumbnail) {
+        updated[variantIndex].thumbnail = value
+      }
+      return { ...prev, colorVariants: updated }
+    })
+  }
+
   const createProduct = async (event) => {
     event.preventDefault()
     setCreating(true)
     try {
+      // 필수 필드 검증
+      if (!newProduct.name.trim() || !newProduct.description.trim() || !newProduct.price || !newProduct.releaseDate) {
+        throw new Error('필수 필드를 모두 입력해주세요.')
+      }
+
+      // 사이즈가 최소 1개 이상 필요
+      if (!newProduct.sizes || newProduct.sizes.length === 0) {
+        throw new Error('가용 사이즈를 최소 1개 이상 선택해주세요.')
+      }
+
+      // 소재가 최소 1개 이상 필요
+      if (!newProduct.materials || newProduct.materials.length === 0) {
+        throw new Error('소재를 최소 1개 이상 선택해주세요.')
+      }
+
+      // colorVariants 유효성 검사
+      const validColorVariants = newProduct.colorVariants
+        .filter((variant) => variant.name && variant.name.trim())
+        .map((variant) => ({
+          name: variant.name.trim(),
+          images: variant.images.filter((img) => img && img.trim()),
+          thumbnail: variant.thumbnail && variant.thumbnail.trim() 
+            ? variant.thumbnail.trim() 
+            : (variant.images.filter((img) => img && img.trim())[0] || ''),
+        }))
+
+      if (validColorVariants.length === 0) {
+        throw new Error('최소 1개 이상의 색상 변형이 필요합니다.')
+      }
+
+      // 각 색상 변형에 최소 1개 이상의 이미지가 필요
+      for (const variant of validColorVariants) {
+        if (variant.images.length === 0) {
+          throw new Error(`"${variant.name}" 색상에 최소 1개 이상의 이미지가 필요합니다.`)
+        }
+      }
+
       const payload = {
         name: newProduct.name.trim(),
         description: newProduct.description.trim(),
@@ -178,23 +348,25 @@ function AdminDashboard() {
           .split(',')
           .map((value) => value.trim())
           .filter(Boolean),
-        sizes: newProduct.sizes,
+        sizes: newProduct.sizes.map(Number), // 숫자 배열로 전송 (백엔드에서 문자열로 변환)
         materials: newProduct.materials,
-        image: newProduct.image.trim(),
+        colorVariants: validColorVariants,
       }
 
-      const response = await fetch('/api/admin/products', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       })
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data.error ?? '상품 등록에 실패했습니다.')
+        throw new Error(data.message || '상품 등록에 실패했습니다.')
       }
 
+      // 응답: 직접 객체 반환 { id, name, description, ... }
       setProducts((prev) => {
-        const next = [...prev, data.item]
+        const next = [...prev, data]
         initializeDrafts(next)
         return next
       })
@@ -217,10 +389,12 @@ function AdminDashboard() {
       params.append('start', salesFilters.start)
       params.append('end', salesFilters.end)
 
-      const response = await fetch(`/api/admin/sales?${params.toString()}`)
+      const response = await fetch(`${API_BASE_URL}/api/admin/sales?${params.toString()}`, {
+        credentials: 'include',
+      })
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data.error ?? '판매 현황을 불러오지 못했습니다.')
+        throw new Error(data.message || '판매 현황을 불러오지 못했습니다.')
       }
       setSalesResult(data)
     } catch (err) {
@@ -237,6 +411,15 @@ function AdminDashboard() {
       totalRevenue: currency(Math.round(salesResult.totals?.revenue ?? 0)),
     }
   }, [salesResult])
+
+  // 권한 확인 중이면 로딩 표시
+  if (checkingAuth) {
+    return (
+      <div className="admin-page">
+        <p>권한을 확인하는 중...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="admin-page">
@@ -351,11 +534,12 @@ function AdminDashboard() {
             />
           </label>
           <label>
-            설명
+            설명 *
             <textarea
               value={newProduct.description}
               onChange={(event) => handleNewProductChange('description', event.target.value)}
               rows={3}
+              required
             />
           </label>
           <div className="admin-form__row">
@@ -388,15 +572,83 @@ function AdminDashboard() {
               onChange={(event) => handleNewProductChange('categories', event.target.value)}
             />
           </label>
-          <label>
-            이미지 URL *
-            <input
-              type="url"
-              value={newProduct.image}
-              onChange={(event) => handleNewProductChange('image', event.target.value)}
-              required
-            />
-          </label>
+          
+          <div className="admin-form-group">
+            <div className="admin-form-group__header">
+              <p className="admin-form-group__label">색상 변형 *</p>
+              <button type="button" className="admin-button admin-button--small" onClick={addColorVariant}>
+                + 색상 추가
+              </button>
+            </div>
+            {newProduct.colorVariants.map((variant, variantIndex) => (
+              <div key={variantIndex} className="color-variant-group">
+                <div className="color-variant-header">
+                  <label className="color-variant-name">
+                    색상명 *
+                    <input
+                      type="text"
+                      placeholder="예: 내추럴 블랙"
+                      value={variant.name}
+                      onChange={(event) => updateColorVariant(variantIndex, 'name', event.target.value)}
+                      required
+                    />
+                  </label>
+                  {newProduct.colorVariants.length > 1 && (
+                    <button
+                      type="button"
+                      className="admin-button admin-button--small admin-button--danger"
+                      onClick={() => removeColorVariant(variantIndex)}
+                    >
+                      삭제
+                    </button>
+                  )}
+                </div>
+                
+                <label className="color-variant-thumbnail">
+                  썸네일 URL
+                  <input
+                    type="url"
+                    placeholder="썸네일 이미지 URL (선택사항)"
+                    value={variant.thumbnail}
+                    onChange={(event) => updateColorVariant(variantIndex, 'thumbnail', event.target.value)}
+                  />
+                </label>
+
+                <div className="color-variant-images">
+                  <div className="color-variant-images-header">
+                    <p className="admin-form-group__label">이미지 URL *</p>
+                    <button
+                      type="button"
+                      className="admin-button admin-button--small"
+                      onClick={() => addImageToVariant(variantIndex)}
+                    >
+                      + 이미지 추가
+                    </button>
+                  </div>
+                  {variant.images.map((image, imageIndex) => (
+                    <div key={imageIndex} className="image-input-row">
+                      <input
+                        type="url"
+                        placeholder={`이미지 URL ${imageIndex + 1}`}
+                        value={image}
+                        onChange={(event) => updateImageInVariant(variantIndex, imageIndex, event.target.value)}
+                        required
+                      />
+                      {variant.images.length > 1 && (
+                        <button
+                          type="button"
+                          className="admin-button admin-button--small admin-button--danger"
+                          onClick={() => removeImageFromVariant(variantIndex, imageIndex)}
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
           <div className="admin-form__row">
             <div className="admin-form__column">
               <p className="admin-form-group__label">가용 사이즈 *</p>

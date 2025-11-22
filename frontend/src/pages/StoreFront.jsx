@@ -41,11 +41,34 @@ const toggleFilter = (currentFilters, target) =>
 
 const findMaterialLabel = (value) => MATERIAL_OPTIONS.find((option) => option.value === value)?.label ?? value
 
-const discountPercent = (product) => Math.round((product.discountRate ?? 0) * 100)
+const isOnSale = (product) => {
+  if (!product.discountRate || product.discountRate === 0) return false
+  const now = new Date()
+  const saleStart = product.saleStart ? new Date(product.saleStart) : null
+  const saleEnd = product.saleEnd ? new Date(product.saleEnd) : null
+  
+  if (saleStart && now < saleStart) return false
+  if (saleEnd && now > saleEnd) return false
+  return true
+}
+
+const discountPercent = (product) => {
+  // discountRate는 0~100 사이의 백분율
+  if (!isOnSale(product)) return 0
+  return Math.round(product.discountRate ?? 0)
+}
 
 const discountedPrice = (product) => {
-  if (!product.discountRate) return product.price
-  return Math.round(product.price * (1 - product.discountRate))
+  // price는 원래 가격, discountRate는 백분율(0~100)
+  if (!isOnSale(product)) return product.price
+  return Math.round(product.price * (1 - product.discountRate / 100))
+}
+
+const originalPrice = (product) => {
+  // 할인 중이면 원래 가격 반환
+  if (!isOnSale(product)) return null
+  // price는 원래 가격이므로 그대로 반환
+  return product.price
 }
 
 function StoreFront() {
@@ -326,7 +349,7 @@ function StoreFront() {
                           <>
                             <span className="product-card__price-rate">{percent}%</span>
                             <span className="product-card__price-final">{currency(discountedPrice(product))}</span>
-                            <span className="product-card__price-original">{currency(product.price)}</span>
+                            <span className="product-card__price-original">{currency(originalPrice(product))}</span>
                           </>
                         ) : (
                           <span className="product-card__price-final">{currency(product.price)}</span>

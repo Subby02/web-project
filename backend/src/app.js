@@ -7,6 +7,7 @@ const productRoutes = require('./routes/productRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 const allowedOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
@@ -44,6 +45,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/admin', adminRoutes);
 
 module.exports = app;
 

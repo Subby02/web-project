@@ -100,7 +100,7 @@ router.get('/me', async (req, res) => {
 
   try {
     const user = await User.findById(req.session.userId).select(
-      'name username email phone createdAt'
+      'name username email phone createdAt isAdmin'
     );
 
     if (!user) {
