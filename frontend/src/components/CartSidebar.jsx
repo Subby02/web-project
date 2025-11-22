@@ -198,6 +198,11 @@ const EmptyCart = styled.div`
   font-size: 16px;
 `;
 
+const EmptyCartIcon = styled.div`
+  font-size: 48px;
+  margin-bottom: 16px;
+`;
+
 const Footer = styled.div`
   padding: 24px;
   border-top: 1px solid var(--border);
@@ -322,7 +327,7 @@ export default function CartSidebar({ isOpen, onClose }) {
         <Content>
           {cart.length === 0 ? (
             <EmptyCart>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🛒</div>
+              <EmptyCartIcon>🛒</EmptyCartIcon>
               <div>장바구니가 비어있습니다.</div>
             </EmptyCart>
           ) : (

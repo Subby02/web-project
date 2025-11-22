@@ -127,7 +127,7 @@ export default function Home(){
 
       <section className="home-section full-width">
         <div className="materials-section">
-          <h2 className="section-title" style={{marginTop: 0, color: '#111'}}>우리가 사용하는 소재</h2>
+          <h2 className="section-title no-margin">우리가 사용하는 소재</h2>
           <div className="materials-grid">
             {materials.map((material, idx) => (
               <div key={idx} className="material-card">
@@ -158,7 +158,7 @@ export default function Home(){
             />
             <button type="submit" className="submit-button">구독</button>
           </form>
-          <p style={{fontSize: 12, marginTop: 16, color: '#666'}}>
+          <p>
             구독 시 마케팅 이메일 수신에 동의하게 됩니다. 자세한 내용은 개인정보 처리방침 및 이용약관을 확인해 주세요.
           </p>
         </div>
@@ -166,7 +166,7 @@ export default function Home(){
 
       <section className="home-section full-width">
         <div className="brand-section">
-          <div className="brand-card" style={{background: '#f0f8f0'}}>
+          <div className="brand-card bg-light-green">
             <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop" alt="편안함" />
             <h3>매일 경험하는 편안함</h3>
             <p>
@@ -174,7 +174,7 @@ export default function Home(){
               놀라운 편안함은 긴 여정도 짧은 산책처럼 느껴집니다.
             </p>
           </div>
-          <div className="brand-card dark" style={{background: '#1a1a1a'}}>
+          <div className="brand-card dark bg-dark">
             <img src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=600&h=400&fit=crop" alt="지속가능성" />
             <h3>지속 가능한 발걸음</h3>
             <p>
@@ -182,7 +182,7 @@ export default function Home(){
               탄소 발자국을 제로에 가깝게 줄이려는 노력에 동참해주세요.
             </p>
           </div>
-          <div className="brand-card" style={{background: '#f9f9f9'}}>
+          <div className="brand-card bg-light-gray">
             <img src="https://images.unsplash.com/photo-1585121508800-1015a9e0d0e5?w=600&h=400&fit=crop" alt="소재" />
             <h3>지구에서 온 소재</h3>
             <p>

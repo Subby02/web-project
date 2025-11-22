@@ -64,10 +64,11 @@ export default function ProductDetail() {
   const images = useMemo(() => {
     if (product?.colorVariants && selectedColor) {
       const selectedVariant = product.colorVariants.find(v => v.name === selectedColor);
-      if (selectedVariant && selectedVariant.images) {
+      if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
         return selectedVariant.images;
       }
     }
+    // colorVariant가 없거나 이미지가 없으면 기본 이미지 사용
     return product?.images || (product?.image ? [product.image] : []);
   }, [product, selectedColor]);
 
@@ -196,7 +197,8 @@ export default function ProductDetail() {
               <div className="color-options">
                 {colors.map((color, idx) => {
                   const variant = colorVariants.find(v => v.name === color);
-                  const thumbnail = variant?.thumbnail || images[0] || '';
+                  // 각 색상의 썸네일을 찾되, 없으면 해당 색상의 첫 번째 이미지 또는 기본 이미지 사용
+                  const thumbnail = variant?.thumbnail || variant?.images?.[0] || images[0] || '';
                   return (
                     <button
                       key={idx}
@@ -262,7 +264,7 @@ export default function ProductDetail() {
 
           <div className="store-stock-section">
             <strong>오프라인 매장 재고 확인</strong>
-            <div style={{ marginTop: '8px', fontSize: '13px' }}>
+            <div>
               사이즈를 선택하시면 재고가 있는 매장을 확인할 수 있습니다.
             </div>
           </div>
@@ -330,7 +332,7 @@ export default function ProductDetail() {
               <li>찬물/울 코스로 중성세제를 적당량 첨가하여 세탁</li>
               <li>세탁 후에 남은 물기는 털어 자연 건조</li>
             </ul>
-            <p style={{ marginTop: '12px' }}>
+            <p>
               *자세한 가이드는 여기에서 확인하세요.
             </p>
           </div>
@@ -384,9 +386,9 @@ export default function ProductDetail() {
             </div>
           </>
         ) : (
-          <div style={{ textAlign: 'center', padding: '48px', color: '#666' }}>
-            <div style={{ fontSize: '18px', marginBottom: '8px' }}>아직 작성된 후기가 없습니다.</div>
-            <div style={{ fontSize: '14px' }}>첫 번째 후기를 작성해보세요!</div>
+          <div className="reviews-empty">
+            <div className="reviews-empty-title">아직 작성된 후기가 없습니다.</div>
+            <div className="reviews-empty-subtitle">첫 번째 후기를 작성해보세요!</div>
           </div>
         )}
       </div>

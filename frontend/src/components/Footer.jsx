@@ -123,6 +123,10 @@ const BText = styled.div`
   line-height: 1.4;
 `;
 
+const BCertifiedText = styled.div`
+  font-weight: 600;
+`;
+
 const BottomSection = styled.div`
   max-width: 1280px;
   margin: 0 auto;
@@ -223,7 +227,7 @@ export default function Footer() {
             <BCorpLogo>
               <BCircle>B</BCircle>
               <BText>
-                <div style={{fontWeight: 600}}>Certified</div>
+                <BCertifiedText>Certified</BCertifiedText>
                 <div>B Corporation</div>
               </BText>
             </BCorpLogo>

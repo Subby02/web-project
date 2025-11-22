@@ -100,6 +100,29 @@
   text-align: left;
 }
 
+.section-title.no-margin {
+  margin-top: 0;
+  color: #111;
+}
+
+.newsletter-section p {
+  font-size: 12px;
+  margin-top: 16px;
+  color: #666;
+}
+
+.brand-card.bg-light-green {
+  background: #f0f8f0;
+}
+
+.brand-card.bg-dark {
+  background: #1a1a1a;
+}
+
+.brand-card.bg-light-gray {
+  background: #f9f9f9;
+}
+
 @media (max-width: 768px) {
   .section-title {
     font-size: 24px;
