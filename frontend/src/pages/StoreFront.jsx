@@ -171,7 +171,7 @@ function StoreFront() {
           <button className="gender-toggle__button is-active" type="button" role="tab" aria-selected="true">
             남성
           </button>
-          <button className="gender-toggle__button" type="button" role="tab" aria-selected="false" disabled>
+          <button className="gender-toggle__button" type="button" role="tab" aria-selected="false">
             여성
           </button>
         </div>
@@ -179,10 +179,9 @@ function StoreFront() {
         <div className="hero">
           <h1>남성 라이프스타일 신발</h1>
           <p className="hero__description">
-            당신의 하루를 함께하는 라이프스타일 신발 컬렉션. 편안한 착화감과 세련된 디자인으로 언제 어디에서나 활용할 수
+            당신의 하루를 함께하는 라이프스타일 신발 컬렉션. 편안한 착화감과 세련된 디자인으로 언제 어디서나 활용할 수
             있습니다.
           </p>
-          <p className="hero__selection">{subtitle}</p>
         </div>
 
         <div className="chip-row" role="tablist" aria-label="하이라이트 카테고리">
@@ -207,7 +206,7 @@ function StoreFront() {
             <p className="filters-applied__title">적용된 필터</p>
             <span className="filters-applied__count">{productCountLabel}</span>
           </div>
-          <div className="applied-filter-tags applied-filter-tags--stacked">
+          <div className="applied-filter-tags">
             {appliedFilters.length === 0 && <span className="applied-filter-tags__empty">필터가 없습니다.</span>}
             {appliedFilters.map((filter) => (
               <button
