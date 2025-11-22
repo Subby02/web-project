@@ -199,14 +199,24 @@ router.get('/popular', async (req, res) => {
       .select('name colorVariants price discountRate sizes salesVolume saleStart saleEnd');
 
     const formattedProducts = products.map((product) => {
+      const now = new Date();
+      const hasSalePeriod = product.saleStart && product.saleEnd;
       const isOnSale =
+        hasSalePeriod &&
         product.discountRate > 0 &&
-        (!product.saleStart || new Date() >= product.saleStart) &&
-        (!product.saleEnd || new Date() <= product.saleEnd);
+        now >= product.saleStart &&
+        now <= product.saleEnd;
 
-      const originalPrice = isOnSale
-        ? Math.round(product.price / (1 - product.discountRate / 100))
-        : null;
+      // product.price는 원가로 저장되어 있음
+      // 할인이 적용되면 할인된 가격을 계산
+      let salePrice = product.price;
+      let originalPrice = null;
+
+      if (isOnSale && product.discountRate > 0) {
+        // 할인된 가격 = 원가 * (1 - 할인율 / 100)
+        salePrice = Math.round(product.price * (1 - product.discountRate / 100));
+        originalPrice = product.price; // 원가는 저장된 price
+      }
 
       // 첫 번째 색상의 이름과 첫 번째 이미지 사용
       const firstColor = product.colorVariants?.[0];
@@ -216,10 +226,8 @@ router.get('/popular', async (req, res) => {
         id: product._id.toString(),
         name: product.name,
         color: firstColor?.name || '',
-        price: isOnSale
-          ? product.price
-          : originalPrice || product.price,
-        originalPrice: isOnSale ? originalPrice : null,
+        price: salePrice,
+        originalPrice: originalPrice,
         sizes: product.sizes || [],
         image: defaultImage,
       };
@@ -249,9 +257,16 @@ router.get('/:id', async (req, res) => {
       now >= product.saleStart &&
       now <= product.saleEnd;
 
-    const originalPrice = isOnSale
-      ? Math.round(product.price / (1 - product.discountRate / 100))
-      : null;
+    // product.price는 원가로 저장되어 있음
+    // 할인이 적용되면 할인된 가격을 계산
+    let salePrice = product.price;
+    let originalPrice = null;
+
+    if (isOnSale && product.discountRate > 0) {
+      // 할인된 가격 = 원가 * (1 - 할인율 / 100)
+      salePrice = Math.round(product.price * (1 - product.discountRate / 100));
+      originalPrice = product.price; // 원가는 저장된 price
+    }
 
     // sizes를 숫자 배열로 변환 (문자열 배열인 경우)
     let sizes = [];
@@ -274,8 +289,8 @@ router.get('/:id', async (req, res) => {
       id: product._id.toString(),
       name: product.name,
       description: product.description,
-      price: isOnSale ? product.price : originalPrice || product.price,
-      originalPrice: isOnSale ? originalPrice : null,
+      price: salePrice,
+      originalPrice: originalPrice,
       colors: colors,
       sizes: sizes,
       images: defaultImages.length > 0 ? defaultImages : null,

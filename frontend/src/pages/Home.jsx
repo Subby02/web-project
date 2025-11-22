@@ -109,30 +109,45 @@ export default function Home(){
                   '--slider-offset': `${calculateSliderTransform()}%`
                 }}
               >
-                {popularProducts.map((product, idx) => (
-                  <Link key={product.id} to={`/products/${product.id}`} className="horizontal-card">
-                    <div className="product-badge">{idx + 1}</div>
-                    <img alt={product.name} src={product.image || 'https://via.placeholder.com/600'} />
-                    <div>
-                      <strong className="product-title">{product.name}</strong>
-                      <div className="product-name">{product.color || ''}</div>
-                      <div className="product-price">
-                        {product.originalPrice && (
-                          <span className="original-price">₩{product.originalPrice.toLocaleString()}</span>
+                {popularProducts.map((product, idx) => {
+                  // 이미지 URL 처리 (상대 경로인 경우 API_BASE_URL 추가)
+                  const imageUrl = product.image 
+                    ? (product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`)
+                    : 'https://via.placeholder.com/600';
+                  
+                  return (
+                    <Link key={product.id} to={`/products/${product.id}`} className="horizontal-card">
+                      <div className="product-badge">{idx + 1}</div>
+                      <img alt={product.name} src={imageUrl} />
+                      <div>
+                        <strong className="product-title">{product.name}</strong>
+                        {product.color && (
+                          <div className="product-name">{product.color}</div>
                         )}
-                        <span className="sale-price">₩{product.price.toLocaleString()}</span>
-                      </div>
-                      <div className="product-sizes">
-                        <div className="size-label">주문 가능 사이즈</div>
-                        <div className="size-list">
-                          {product.sizes && product.sizes.map((size) => (
-                            <span key={size} className="size-tag">{size}</span>
-                          ))}
+                        <div className="product-price">
+                          {product.originalPrice && product.originalPrice > product.price ? (
+                            <>
+                              <span className="original-price">₩{product.originalPrice.toLocaleString()}</span>
+                              <span className="sale-price">₩{product.price.toLocaleString()}</span>
+                            </>
+                          ) : (
+                            <span className="sale-price">₩{product.price.toLocaleString()}</span>
+                          )}
                         </div>
+                        {product.sizes && product.sizes.length > 0 && (
+                          <div className="product-sizes">
+                            <div className="size-label">주문 가능 사이즈</div>
+                            <div className="size-list">
+                              {product.sizes.map((size) => (
+                                <span key={size} className="size-tag">{size}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>

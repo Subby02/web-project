@@ -23,14 +23,16 @@ const storage = multer.diskStorage({
 
 // 파일 필터: 이미지 파일만 허용
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+  const allowedExtensions = /\.(jpeg|jpg|png|gif|webp|avif)$/i;
+  const allowedMimeTypes = /^image\/(jpeg|jpg|png|gif|webp|avif)$/i;
+  
+  const extname = allowedExtensions.test(path.extname(file.originalname));
+  const mimetype = allowedMimeTypes.test(file.mimetype);
 
   if (extname && mimetype) {
     cb(null, true);
   } else {
-    cb(new Error('이미지 파일만 업로드 가능합니다. (jpeg, jpg, png, gif, webp)'));
+    cb(new Error('이미지 파일만 업로드 가능합니다. (jpeg, jpg, png, gif, webp, avif)'));
   }
 };
 

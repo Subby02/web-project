@@ -281,9 +281,9 @@ function AdminDashboard() {
     }
 
     // 파일 타입 검증
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/avif']
     if (!allowedTypes.includes(file.type)) {
-      window.alert('이미지 파일만 업로드 가능합니다. (jpeg, jpg, png, gif, webp)')
+      window.alert('이미지 파일만 업로드 가능합니다. (jpeg, jpg, png, gif, webp, avif)')
       return
     }
 
@@ -637,13 +637,13 @@ function AdminDashboard() {
             <div className="material-list material-list--horizontal">
               {CATEGORY_OPTIONS.map((category) => (
                 <label key={category} className="material-list__item">
-                  <input
+            <input
                     type="checkbox"
                     checked={newProduct.categories.includes(category)}
                     onChange={() => toggleNewProductCategory(category)}
-                  />
+            />
                   <span>{category}</span>
-                </label>
+          </label>
               ))}
             </div>
           </div>
@@ -678,7 +678,7 @@ function AdminDashboard() {
                     </button>
                   )}
                 </div>
-                
+
                 <div className="color-variant-images">
                   <div className="color-variant-images-header">
                     <p className="admin-form-group__label">이미지 업로드 *</p>
@@ -693,9 +693,9 @@ function AdminDashboard() {
                   {variant.images.map((image, imageIndex) => (
                     <div key={imageIndex} className="image-input-row">
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '100%' }}>
-                        <input
+                      <input
                           type="file"
-                          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/avif"
                           onChange={(event) => {
                             const file = event.target.files?.[0]
                             if (file) {
@@ -704,15 +704,15 @@ function AdminDashboard() {
                           }}
                           required={imageIndex === 0}
                           style={{ flex: 1 }}
-                        />
-                        {variant.images.length > 1 && (
-                          <button
-                            type="button"
-                            className="admin-button admin-button--small admin-button--danger"
-                            onClick={() => removeImageFromVariant(variantIndex, imageIndex)}
-                          >
-                            삭제
-                          </button>
+                      />
+                      {variant.images.length > 1 && (
+                        <button
+                          type="button"
+                          className="admin-button admin-button--small admin-button--danger"
+                          onClick={() => removeImageFromVariant(variantIndex, imageIndex)}
+                        >
+                          삭제
+                        </button>
                         )}
                       </div>
                       {image && (
@@ -793,6 +793,22 @@ function AdminDashboard() {
                 />
               </label>
             </div>
+            {newProduct.price && newProduct.discountRate && Number(newProduct.discountRate) > 0 && (
+              <div className="discount-preview" style={{ marginTop: '12px', padding: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+                <p style={{ margin: '0 0 4px 0', fontSize: '0.9rem', color: '#6b7280' }}>할인 적용 가격</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span style={{ fontSize: '0.9rem', color: '#6b7280', textDecoration: 'line-through' }}>
+                    {currency(Number(newProduct.price))}
+                  </span>
+                  <span style={{ fontSize: '1.25rem', fontWeight: '600', color: '#dc2626' }}>
+                    {currency(Math.round(Number(newProduct.price) * (1 - Number(newProduct.discountRate) / 100)))}
+                  </span>
+                  <span style={{ fontSize: '0.85rem', color: '#dc2626', fontWeight: '600' }}>
+                    ({newProduct.discountRate}% 할인)
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           
           <button className="admin-button admin-button--primary" type="submit" disabled={creating}>
