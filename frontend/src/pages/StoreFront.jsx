@@ -203,7 +203,10 @@ function StoreFront() {
 
       <div className="filters-layout">
         <aside className="filters-panel">
-          <p className="filters-applied__title">적용된 필터</p>
+          <div className="filters-applied__header">
+            <p className="filters-applied__title">적용된 필터</p>
+            <span className="filters-applied__count">{productCountLabel}</span>
+          </div>
           <div className="applied-filter-tags applied-filter-tags--stacked">
             {appliedFilters.length === 0 && <span className="applied-filter-tags__empty">필터가 없습니다.</span>}
             {appliedFilters.map((filter) => (
