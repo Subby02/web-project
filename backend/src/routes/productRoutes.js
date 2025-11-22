@@ -156,6 +156,13 @@ router.get('/', async (req, res) => {
       // 첫 번째 색상의 첫 번째 이미지를 기본 이미지로 사용
       const defaultImage = product.colorVariants?.[0]?.images?.[0] || product.colorVariants?.[0]?.thumbnail || '';
 
+      // colorVariants 포맷팅 (이미지 URL 처리)
+      const formattedColorVariants = (product.colorVariants || []).map((variant) => ({
+        name: variant.name,
+        images: variant.images || [],
+        thumbnail: variant.thumbnail || variant.images?.[0] || '',
+      }));
+
       return {
         id: product._id.toString(),
         gender: product.gender || '남성',
@@ -179,7 +186,7 @@ router.get('/', async (req, res) => {
         recommendationScore: product.recommendationScore || 0,
         salesVolume: product.salesVolume || 0,
         image: defaultImage,
-        colorVariants: product.colorVariants || [],
+        colorVariants: formattedColorVariants,
       };
     });
 

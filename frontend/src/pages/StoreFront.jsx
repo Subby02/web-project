@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import API_BASE_URL from '../config/api'
 import './StoreFront.css'
 
@@ -329,18 +330,55 @@ function StoreFront() {
             <div className="product-grid">
               {products.map((product) => {
                 const percent = discountPercent(product)
+                // 이미지 URL 처리 (상대 경로인 경우 API_BASE_URL 추가)
+                const getImageUrl = (imageUrl) => {
+                  if (!imageUrl) return null
+                  return imageUrl.startsWith('http') ? imageUrl : `${API_BASE_URL}${imageUrl}`
+                }
+                
+                // 색상별 썸네일 가져오기
+                const colorThumbnails = product.colorVariants?.map(variant => ({
+                  name: variant.name,
+                  thumbnail: variant.thumbnail || variant.images?.[0] || product.image || ''
+                })) || []
+                
                 return (
                   <article key={product.id} className="product-card product-card--minimal">
-                    <div className="product-card__image product-card__image--minimal">
-                      {product.image ? <img src={product.image} alt={product.name} loading="lazy" /> : null}
-                      {percent > 0 && <span className="product-card__discount-chip">~ {percent}%</span>}
-                    </div>
+                    <Link to={`/products/${product.id}`} className="product-card__link">
+                      <div className="product-card__image product-card__image--minimal">
+                        {product.image ? (
+                          <img 
+                            src={getImageUrl(product.image)} 
+                            alt={product.name} 
+                            loading="lazy" 
+                          />
+                        ) : null}
+                        {percent > 0 && <span className="product-card__discount-chip">~ {percent}%</span>}
+                      </div>
+                    </Link>
 
                     <div className="product-card__body product-card__body--minimal">
                       <div className="product-card__thumbnails">
-                        {[...Array(5)].map((_, index) => (
-                          <span key={index} className="product-card__thumbnail" aria-hidden="true" />
-                        ))}
+                        {colorThumbnails.length > 0 ? (
+                          colorThumbnails.slice(0, 5).map((color, index) => {
+                            const thumbnailUrl = getImageUrl(color.thumbnail)
+                            return thumbnailUrl ? (
+                              <img
+                                key={index}
+                                src={thumbnailUrl}
+                                alt={color.name}
+                                className="product-card__thumbnail"
+                                title={color.name}
+                              />
+                            ) : (
+                              <span key={index} className="product-card__thumbnail" aria-hidden="true" />
+                            )
+                          })
+                        ) : (
+                          [...Array(5)].map((_, index) => (
+                            <span key={index} className="product-card__thumbnail" aria-hidden="true" />
+                          ))
+                        )}
                       </div>
                       <h3>{product.name}</h3>
                       <p>{product.description}</p>

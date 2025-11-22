@@ -152,7 +152,7 @@ export default function Header({ onCartClick = () => {} }) {
           </div>
           <div className="header-col with-line">
             <h4 className="header-h">남성 신발</h4>
-            <a href="#" className="header-link">전체</a>
+            <Link to="/store" className="header-link" onClick={close}>전체</Link>
             <a href="#" className="header-link">가을 컬렉션</a>
             <a href="#" className="header-link">라이프스타일</a>
             <a href="#" className="header-link">액티브</a>
