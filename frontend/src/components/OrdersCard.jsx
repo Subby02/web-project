@@ -1,4 +1,7 @@
+import { useNavigate } from 'react-router-dom';
+
 function OrdersCard({ orders = [], loading = false }) {
+  const navigate = useNavigate();
   const formatCurrency = (value) => `₩${value.toLocaleString('ko-KR')}`
   
   const formatDate = (dateString) => {
@@ -63,7 +66,12 @@ function OrdersCard({ orders = [], loading = false }) {
             <span>{formatCurrency(order.totalPrice || order.price * order.quantity)}</span>
             <span>{formatDate(order.date)}</span>
             <span>
-              <button className="review-button">후기 작성</button>
+              <button 
+                className="review-button"
+                onClick={() => navigate(`/write-review?productId=${order.productId}`)}
+              >
+                후기 작성
+              </button>
             </span>
           </div>
         ))}

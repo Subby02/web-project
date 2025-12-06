@@ -81,6 +81,23 @@ export default function ProductDetail() {
     }
   }, [selectedColor]);
 
+  // 사이즈를 숫자로 변환 후 오름차순 정렬 - early return 전에 호출해야 함
+  const sizes = useMemo(() => {
+    if (!product?.sizes || product.sizes.length === 0) return [];
+    return [...product.sizes]
+      .map(size => {
+        const numSize = Number(size);
+        return isNaN(numSize) ? size : numSize;
+      })
+      .sort((a, b) => {
+        // 숫자면 숫자로 정렬, 아니면 문자열로 정렬
+        if (typeof a === 'number' && typeof b === 'number') {
+          return a - b;
+        }
+        return String(a).localeCompare(String(b));
+      });
+  }, [product?.sizes]);
+
   // early return은 모든 hooks 호출 후에
   if (loading) return <div className="loading">로딩 중...</div>;
   if (error) return <div className="error">{error}</div>;
@@ -88,7 +105,6 @@ export default function ProductDetail() {
 
   const colors = product?.colors || ['내추럴 블랙'];
   const colorVariants = product?.colorVariants || [];
-  const sizes = product?.sizes || [];
 
   // 색상 선택 시 이미지 변경
   const handleColorSelect = (color) => {

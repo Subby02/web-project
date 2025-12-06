@@ -275,13 +275,21 @@ router.get('/:id', async (req, res) => {
       originalPrice = product.price; // 원가는 저장된 price
     }
 
-    // sizes를 숫자 배열로 변환 (문자열 배열인 경우)
+    // sizes를 숫자 배열로 변환 후 오름차순 정렬 (문자열 배열인 경우)
     let sizes = [];
     if (Array.isArray(product.sizes)) {
-      sizes = product.sizes.map((size) => {
-        const numSize = Number(size);
-        return isNaN(numSize) ? size : numSize;
-      });
+      sizes = product.sizes
+        .map((size) => {
+          const numSize = Number(size);
+          return isNaN(numSize) ? size : numSize;
+        })
+        .sort((a, b) => {
+          // 숫자면 숫자로 정렬, 아니면 문자열로 정렬
+          if (typeof a === 'number' && typeof b === 'number') {
+            return a - b;
+          }
+          return String(a).localeCompare(String(b));
+        });
     }
 
     // colorVariants에서 색상 목록 추출

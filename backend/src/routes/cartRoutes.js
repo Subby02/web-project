@@ -16,19 +16,25 @@ const requireAuth = (req, res, next) => {
 router.get('/', requireAuth, async (req, res) => {
   try {
     const cartItems = await Cart.find({ userId: req.session.userId })
-      .populate('productId', 'name price image color')
+      .populate('productId', 'name price colorVariants')
       .sort({ createdAt: -1 });
 
-    const formattedCart = cartItems.map((item) => ({
-      id: item._id.toString(),
-      productId: item.productId._id.toString(),
-      productName: item.productId.name,
-      price: item.productId.price,
-      image: item.productId.image,
-      color: item.productId.color,
-      size: item.size,
-      quantity: item.quantity,
-    }));
+    const formattedCart = cartItems.map((item) => {
+      // colorVariants에서 이미지 추출
+      const firstVariant = item.productId.colorVariants?.[0];
+      const defaultImage = firstVariant?.thumbnail || firstVariant?.images?.[0] || null;
+
+      return {
+        id: item._id.toString(),
+        productId: item.productId._id.toString(),
+        productName: item.productId.name,
+        price: item.productId.price,
+        image: defaultImage,
+        color: item.productId.colorVariants?.[0]?.name || null,
+        size: item.size,
+        quantity: item.quantity,
+      };
+    });
 
     res.json(formattedCart);
   } catch (error) {

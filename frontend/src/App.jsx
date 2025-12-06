@@ -9,6 +9,7 @@ import StoreFront from './pages/StoreFront';
 import MyPage from './pages/MyPage';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
+import WriteReview from './pages/WriteReview';
 
 function App() {
   const [cartOpen, setCartOpen] = useState(false);
@@ -34,6 +35,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/write-review" element={<WriteReview />} />
           </Routes>
         </main>
         <Footer />

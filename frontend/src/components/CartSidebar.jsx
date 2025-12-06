@@ -3,6 +3,13 @@ import API_BASE_URL from '../config/api';
 import { getLocalCart, removeFromLocalCart, updateLocalCartQuantity, clearLocalCart } from '../utils/cartStorage';
 import './CartSidebar.css';
 
+// 이미지 URL 처리 함수
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return 'https://via.placeholder.com/100';
+  if (imageUrl.startsWith('http')) return imageUrl;
+  return `${API_BASE_URL}${imageUrl}`;
+};
+
 export default function CartSidebar({ isOpen, onClose }) {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -247,7 +254,7 @@ export default function CartSidebar({ isOpen, onClose }) {
           ) : (
             cart.map((item) => (
               <div key={item.id} className="cart-item">
-                <img src={item.image || 'https://via.placeholder.com/100'} alt={item.productName} className="cart-item-image" />
+                <img src={getImageUrl(item.image)} alt={item.productName} className="cart-item-image" />
                 <div className="cart-item-info">
                   <div className="cart-item-name">{item.productName}</div>
                   {item.color && <div className="cart-item-size">색상: {item.color}</div>}
