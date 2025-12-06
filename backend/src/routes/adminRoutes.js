@@ -333,7 +333,9 @@ router.get('/sales', requireAdmin, async (req, res) => {
 
       const productId = order.productId._id.toString();
       const productName = order.productId.name;
-      const unitPrice = order.productId.price || 0;
+      // 실제 결제된 금액 사용 (할인이 적용된 금액)
+      // paidAmount가 없으면 기존 주문이므로 원가를 사용 (하위 호환성)
+      const unitPrice = order.paidAmount !== undefined ? order.paidAmount : (order.productId.price || 0);
 
       if (salesMap.has(productId)) {
         const existing = salesMap.get(productId);

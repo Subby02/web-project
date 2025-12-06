@@ -46,10 +46,26 @@ router.post('/', requireAuth, async (req, res) => {
 
     // 주문 생성
     const orders = [];
+    const now = new Date();
+    
     for (const item of orderItems) {
       const product = await Product.findById(item.productId);
       if (!product) {
         continue; // 상품이 없으면 스킵
+      }
+
+      // 주문 시점의 할인 가격 계산
+      const hasSalePeriod = product.saleStart && product.saleEnd;
+      const isOnSale =
+        hasSalePeriod &&
+        product.discountRate > 0 &&
+        now >= product.saleStart &&
+        now <= product.saleEnd;
+
+      let paidAmount = product.price; // 기본값은 원가
+      if (isOnSale && product.discountRate > 0) {
+        // 할인된 가격 = 원가 * (1 - 할인율 / 100)
+        paidAmount = Math.round(product.price * (1 - product.discountRate / 100));
       }
 
       const orderId = generateOrderId();
@@ -60,6 +76,7 @@ router.post('/', requireAuth, async (req, res) => {
         quantity: item.quantity,
         size: item.size || null,
         color: item.color || null,
+        paidAmount: paidAmount, // 실제 결제 금액 저장
         date: new Date(),
       });
       orders.push(order);

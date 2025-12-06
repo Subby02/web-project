@@ -30,6 +30,11 @@ const orderSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
+    paidAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
     date: {
       type: Date,
       default: Date.now,
