@@ -24,7 +24,9 @@ export default function ProductDetail() {
         if (!res.ok) throw new Error('제품을 찾을 수 없습니다.');
         const data = await res.json();
         setProduct(data);
-        setSelectedColor(data.colors?.[0] || null);
+        // 색상이 있으면 첫 번째 색상을 기본으로 선택
+        const defaultColor = data.colors?.[0] || data.colorVariants?.[0]?.name || null;
+        setSelectedColor(defaultColor);
         
         // 후기 가져오기
         const reviewsRes = await fetch(`${API_BASE_URL}/api/reviews/${id}`);
@@ -143,6 +145,7 @@ export default function ProductDetail() {
           body: JSON.stringify({
             productId: product.id,
             size: selectedSize,
+            color: selectedColor,
             quantity: 1,
           }),
         });
@@ -202,6 +205,7 @@ export default function ProductDetail() {
               productId: product.id,
               quantity: 1,
               size: selectedSize,
+              color: selectedColor,
             },
           ],
         }),

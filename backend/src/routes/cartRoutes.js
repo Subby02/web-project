@@ -20,9 +20,17 @@ router.get('/', requireAuth, async (req, res) => {
       .sort({ createdAt: -1 });
 
     const formattedCart = cartItems.map((item) => {
-      // colorVariants에서 이미지 추출
-      const firstVariant = item.productId.colorVariants?.[0];
-      const defaultImage = firstVariant?.thumbnail || firstVariant?.images?.[0] || null;
+      // 저장된 색상이 있으면 해당 색상의 이미지, 없으면 첫 번째 색상의 이미지
+      let selectedVariant = null;
+      if (item.color && item.productId.colorVariants) {
+        selectedVariant = item.productId.colorVariants.find(
+          variant => variant.name === item.color
+        );
+      }
+      
+      // 선택된 색상의 이미지 또는 첫 번째 색상의 이미지
+      const variant = selectedVariant || item.productId.colorVariants?.[0];
+      const defaultImage = variant?.thumbnail || variant?.images?.[0] || null;
 
       return {
         id: item._id.toString(),
@@ -30,7 +38,7 @@ router.get('/', requireAuth, async (req, res) => {
         productName: item.productId.name,
         price: item.productId.price,
         image: defaultImage,
-        color: item.productId.colorVariants?.[0]?.name || null,
+        color: item.color || variant?.name || null,
         size: item.size,
         quantity: item.quantity,
       };
@@ -45,7 +53,7 @@ router.get('/', requireAuth, async (req, res) => {
 // 장바구니에 추가
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { productId, size, quantity = 1 } = req.body;
+    const { productId, size, color, quantity = 1 } = req.body;
 
     if (!productId || !size) {
       return res.status(400).json({ message: '상품 ID와 사이즈는 필수입니다.' });
@@ -57,11 +65,18 @@ router.post('/', requireAuth, async (req, res) => {
       return res.status(404).json({ message: '상품을 찾을 수 없습니다.' });
     }
 
-    // 동일한 상품과 사이즈가 이미 장바구니에 있는지 확인
+    // 색상이 제공되지 않았으면 첫 번째 색상을 기본값으로 사용
+    let finalColor = color;
+    if (!finalColor && product.colorVariants && product.colorVariants.length > 0) {
+      finalColor = product.colorVariants[0].name;
+    }
+
+    // 동일한 상품, 사이즈, 색상이 이미 장바구니에 있는지 확인
     const existingCartItem = await Cart.findOne({
       userId: req.session.userId,
       productId: productId,
       size: size,
+      color: finalColor || null,
     });
 
     if (existingCartItem) {
@@ -72,6 +87,7 @@ router.post('/', requireAuth, async (req, res) => {
         id: existingCartItem._id.toString(),
         productId: productId,
         size: size,
+        color: existingCartItem.color || finalColor || null,
         quantity: existingCartItem.quantity,
         message: '장바구니에 추가되었습니다.',
       });
@@ -82,6 +98,7 @@ router.post('/', requireAuth, async (req, res) => {
       userId: req.session.userId,
       productId: productId,
       size: size,
+      color: finalColor || null,
       quantity: quantity,
     });
 
@@ -89,6 +106,7 @@ router.post('/', requireAuth, async (req, res) => {
       id: cartItem._id.toString(),
       productId: productId,
       size: size,
+      color: cartItem.color || finalColor || null,
       quantity: quantity,
       message: '장바구니에 추가되었습니다.',
     });

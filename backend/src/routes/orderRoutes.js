@@ -40,6 +40,7 @@ router.post('/', requireAuth, async (req, res) => {
         productId: item.productId,
         quantity: item.quantity,
         size: item.size,
+        color: item.color || null,
       }));
     }
 
@@ -57,6 +58,8 @@ router.post('/', requireAuth, async (req, res) => {
         userId: req.session.userId,
         productId: item.productId,
         quantity: item.quantity,
+        size: item.size || null,
+        color: item.color || null,
         date: new Date(),
       });
       orders.push(order);

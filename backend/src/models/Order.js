@@ -17,6 +17,14 @@ const orderSchema = new mongoose.Schema(
       ref: 'Product',
       required: true,
     },
+    size: {
+      type: String,
+      trim: true,
+    },
+    color: {
+      type: String,
+      trim: true,
+    },
     quantity: {
       type: Number,
       required: true,

@@ -31,6 +31,15 @@ export function addToLocalCart(product, size, quantity = 1, color = null) {
   if (existingItem) {
     existingItem.quantity += quantity;
   } else {
+    // 선택한 색상에 맞는 이미지 찾기
+    let selectedImage = product.images?.[0] || product.image;
+    if (color && product.colorVariants) {
+      const selectedVariant = product.colorVariants.find(v => v.name === color);
+      if (selectedVariant) {
+        selectedImage = selectedVariant.thumbnail || selectedVariant.images?.[0] || selectedImage;
+      }
+    }
+    
     cart.push({
       key: itemKey,
       id: Date.now().toString(), // 임시 ID
@@ -40,7 +49,7 @@ export function addToLocalCart(product, size, quantity = 1, color = null) {
       size,
       quantity,
       color,
-      image: product.images?.[0] || product.image,
+      image: selectedImage,
     });
   }
   
