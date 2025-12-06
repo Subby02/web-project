@@ -259,7 +259,14 @@ export default function CartSidebar({ isOpen, onClose }) {
                   <div className="cart-item-name">{item.productName}</div>
                   {item.color && <div className="cart-item-size">색상: {item.color}</div>}
                   <div className="cart-item-size">사이즈: {item.size}</div>
-                  <div className="cart-item-price">₩{item.price.toLocaleString()}</div>
+                  <div className="cart-item-price">
+                    {item.originalPrice && item.originalPrice > item.price && (
+                      <span style={{ textDecoration: 'line-through', color: '#999', marginRight: '8px' }}>
+                        ₩{item.originalPrice.toLocaleString()}
+                      </span>
+                    )}
+                    <span>₩{item.price.toLocaleString()}</span>
+                  </div>
                   <div className="cart-item-actions">
                     <div className="cart-quantity-control">
                       <button

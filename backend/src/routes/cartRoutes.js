@@ -16,8 +16,10 @@ const requireAuth = (req, res, next) => {
 router.get('/', requireAuth, async (req, res) => {
   try {
     const cartItems = await Cart.find({ userId: req.session.userId })
-      .populate('productId', 'name price colorVariants')
+      .populate('productId', 'name price colorVariants discountRate saleStart saleEnd')
       .sort({ createdAt: -1 });
+
+    const now = new Date();
 
     const formattedCart = cartItems.map((item) => {
       // 저장된 색상이 있으면 해당 색상의 이미지, 없으면 첫 번째 색상의 이미지
@@ -32,11 +34,28 @@ router.get('/', requireAuth, async (req, res) => {
       const variant = selectedVariant || item.productId.colorVariants?.[0];
       const defaultImage = variant?.thumbnail || variant?.images?.[0] || null;
 
+      // 할인 가격 계산
+      const hasSalePeriod = item.productId.saleStart && item.productId.saleEnd;
+      const isOnSale =
+        hasSalePeriod &&
+        item.productId.discountRate > 0 &&
+        now >= item.productId.saleStart &&
+        now <= item.productId.saleEnd;
+
+      let salePrice = item.productId.price;
+      let originalPrice = null;
+
+      if (isOnSale && item.productId.discountRate > 0) {
+        salePrice = Math.round(item.productId.price * (1 - item.productId.discountRate / 100));
+        originalPrice = item.productId.price;
+      }
+
       return {
         id: item._id.toString(),
         productId: item.productId._id.toString(),
         productName: item.productId.name,
-        price: item.productId.price,
+        price: salePrice, // 할인된 가격
+        originalPrice: originalPrice, // 원가 (할인 중일 때만)
         image: defaultImage,
         color: item.color || variant?.name || null,
         size: item.size,

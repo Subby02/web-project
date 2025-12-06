@@ -40,12 +40,14 @@ export function addToLocalCart(product, size, quantity = 1, color = null) {
       }
     }
     
+    // 할인된 가격과 원가 저장 (product.price는 이미 할인된 가격)
     cart.push({
       key: itemKey,
       id: Date.now().toString(), // 임시 ID
       productId: product.id,
       productName: product.name || product.title,
-      price: product.price,
+      price: product.price, // 할인된 가격
+      originalPrice: product.originalPrice || null, // 원가 (할인 중일 때만)
       size,
       quantity,
       color,
