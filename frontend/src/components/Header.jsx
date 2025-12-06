@@ -9,6 +9,7 @@ export default function Header({ onCartClick = () => {} }) {
   const [open, setOpen] = useState(null);
   const [cartCount, setCartCount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const toggle = (key) => setOpen(key);
   const close = () => setOpen(null);
 
@@ -22,8 +23,10 @@ export default function Header({ onCartClick = () => {} }) {
         const data = await response.json();
         // /api/auth/me는 항상 200을 반환하고 authenticated 필드로 로그인 상태 확인
         setIsLoggedIn(data?.authenticated === true);
+        setIsAdmin(data?.isAdmin === true);
       } catch (error) {
         setIsLoggedIn(false);
+        setIsAdmin(false);
       }
     };
 
@@ -125,6 +128,16 @@ export default function Header({ onCartClick = () => {} }) {
         </nav>
         <div className="header-icon-group">
           <button className="header-icon-button" aria-label="검색">🔍</button>
+          {isAdmin && (
+            <button 
+              className="header-icon-button" 
+              aria-label="관리자 페이지" 
+              onClick={() => navigate('/admin')}
+              title="관리자 페이지"
+            >
+              ⚙️
+            </button>
+          )}
           <button 
             className="header-icon-button" 
             aria-label="계정" 
@@ -151,7 +164,7 @@ export default function Header({ onCartClick = () => {} }) {
             <a href="#" className="header-link">울 러너 NZ</a>
           </div>
           <div className="header-col with-line">
-            <h4 className="header-h">남성 신발</h4>
+            <Link to="/store" className="header-h" onClick={close} style={{ textDecoration: 'none', color: 'inherit' }}>남성 신발</Link>
             <Link to="/store" className="header-link" onClick={close}>전체</Link>
             <a href="#" className="header-link">가을 컬렉션</a>
             <a href="#" className="header-link">라이프스타일</a>

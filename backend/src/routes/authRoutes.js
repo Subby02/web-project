@@ -72,6 +72,7 @@ router.post('/login', async (req, res) => {
       username: user.username,
       email: user.email,
       phone: user.phone,
+      isAdmin: user.isAdmin || false,
     });
   } catch (error) {
     res.status(500).json({ message: '로그인 중 오류가 발생했습니다.' });

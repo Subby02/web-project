@@ -85,15 +85,18 @@ router.get('/', async (req, res) => {
 
     // 정렬 처리
     let sortOption = {};
+    let needsPriceSort = false; // 가격 정렬이면 나중에 JavaScript로 정렬
     switch (sort) {
       case 'sales':
         sortOption = { salesVolume: -1 };
         break;
       case 'priceLow':
-        sortOption = { price: 1 };
+        needsPriceSort = true;
+        // DB 정렬은 하지 않음 (할인된 가격 기준으로 정렬해야 하므로)
         break;
       case 'priceHigh':
-        sortOption = { price: -1 };
+        needsPriceSort = true;
+        // DB 정렬은 하지 않음 (할인된 가격 기준으로 정렬해야 하므로)
         break;
       case 'newest':
         sortOption = { releaseDate: -1 };
@@ -108,7 +111,17 @@ router.get('/', async (req, res) => {
     console.log('Query params:', { filters, sizes, materials, sort });
     console.log('Query:', JSON.stringify(query, null, 2));
     
-    const products = await Product.find(query).sort(sortOption);
+    let products;
+    
+    // 가격 정렬이 필요한 경우 DB 정렬 없이 가져온 후 나중에 JavaScript로 정렬
+    if (needsPriceSort) {
+      products = await Product.find(query);
+    } else {
+      // 가격 정렬이 아닌 경우 DB에서 정렬하여 가져옴
+      products = Object.keys(sortOption).length > 0 
+        ? await Product.find(query).sort(sortOption)
+        : await Product.find(query);
+    }
     
     console.log('Found products:', products.length);
     if (products.length === 0 && sizes) {
@@ -131,6 +144,12 @@ router.get('/', async (req, res) => {
         product.discountRate > 0 &&
         now >= product.saleStart &&
         now <= product.saleEnd;
+
+      // 할인된 가격 계산 (정렬을 위해)
+      let salePrice = product.price;
+      if (isOnSale && product.discountRate > 0) {
+        salePrice = Math.round(product.price * (1 - product.discountRate / 100));
+      }
 
       // computedCategories 계산
       // categories는 슬립온, 라이프스타일만 허용
@@ -169,6 +188,7 @@ router.get('/', async (req, res) => {
         name: product.name,
         description: product.description,
         price: product.price,
+        salePrice: salePrice, // 할인된 가격 추가 (정렬용)
         releaseDate: product.releaseDate
           ? product.releaseDate.toISOString().split('T')[0]
           : null,
@@ -189,6 +209,18 @@ router.get('/', async (req, res) => {
         colorVariants: formattedColorVariants,
       };
     });
+
+    // 가격 정렬이 필요한 경우 할인된 가격 기준으로 정렬
+    if (needsPriceSort) {
+      items.sort((a, b) => {
+        if (sort === 'priceLow') {
+          return a.salePrice - b.salePrice;
+        } else if (sort === 'priceHigh') {
+          return b.salePrice - a.salePrice;
+        }
+        return 0;
+      });
+    }
 
     res.json({ items });
   } catch (error) {

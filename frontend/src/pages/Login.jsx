@@ -33,8 +33,10 @@ export default function Login() {
         const data = await response.json();
         // /api/auth/me는 항상 200을 반환하고 authenticated 필드로 로그인 상태 확인
         if (data?.authenticated === true) {
-          // 이미 로그인되어 있으면 마이페이지로 리다이렉트
-          const from = location.state?.from?.pathname || '/mypage';
+          // 이미 로그인되어 있으면 관리자면 관리자 페이지로, 아니면 마이페이지로 리다이렉트
+          const from = data.isAdmin 
+            ? '/admin' 
+            : (location.state?.from?.pathname || '/mypage');
           navigate(from, { replace: true });
         }
       } catch (error) {
@@ -109,10 +111,12 @@ export default function Login() {
       // 로그인 상태 변경 이벤트 발생 (Header에서 로그인 상태 업데이트)
       window.dispatchEvent(new CustomEvent('authChanged'));
       
-      // 리다이렉트할 경로 (이전 페이지 또는 마이페이지)
-      const from = location.state?.from?.pathname || '/mypage';
+      // 관리자 계정이면 관리자 페이지로, 아니면 이전 페이지 또는 마이페이지로 리다이렉트
+      const redirectPath = data.isAdmin 
+        ? '/admin' 
+        : (location.state?.from?.pathname || '/mypage');
       setTimeout(() => {
-        navigate(from, { replace: true });
+        navigate(redirectPath, { replace: true });
       }, 500);
     } catch (err) {
       setError(err.message || '로그인 중 오류가 발생했습니다.');
