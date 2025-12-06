@@ -292,9 +292,7 @@ function StoreFront() {
                 aria-expanded={sortMenuOpen}
               >
                 <span>{currentSortLabel}</span>
-                <span className="sort-menu__icon" aria-hidden="true">
-                  ☰
-                </span>
+                <span className="sort-menu__icon" aria-hidden="true"></span>
               </button>
               {sortMenuOpen && (
                 <div className="sort-menu__dropdown" role="menu">
